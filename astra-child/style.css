@@ -1,0 +1,9 @@
+
+/* Custom Login Page */
+body.login {
+    background-color: #f4f6f9 !important;
+}
+body.login div#login h1 a {
+    background-size: contain !important;
+    width: 100% !important;
+}
