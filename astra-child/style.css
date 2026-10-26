@@ -1,3 +1,15 @@
+feature/van-khanh
+/*
+Theme Name: Astra Child
+Theme URI: https://wpastra.com/
+Description: Child theme for Astra - Dự án Thư viện ảnh số
+Author: Nhóm Dự Án
+Template: astra
+Version: 1.0.0
+*/
+
+/* Tùy chỉnh CSS thêm ở đây */
+
 
 /* Custom Login Page */
 body.login {
@@ -7,3 +19,4 @@ body.login div#login h1 a {
     background-size: contain !important;
     width: 100% !important;
 }
+main
