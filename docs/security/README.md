@@ -18,7 +18,7 @@ Người dùng đã chạy WPScan 4.1.0 bằng Docker trên LocalWP và cung c�
 - **Lăng Kính Security 1.0.0** là plugin riêng ở `security/lang-kinh-security/`, độc lập với theme. Ẩn generator HTML/feed, chặn XML-RPC dự phòng, tắt trình sửa code trong admin, thêm header cơ bản; kiểm tra mật khẩu tại hồ sơ, đặt lại và REST.
 - Mật khẩu mới/đổi: ít nhất 12 ký tự, có hoa/thường/số/ký tự đặc biệt, chặn chuỗi phổ biến. Không kiểm tra lại hoặc đổi mật khẩu quản trị hiện có; không ép reset. Đây là chính sách tối thiểu được kiểm thử, không phải dịch vụ kiểm tra mật khẩu rò rỉ.
 - Nginx: `autoindex off`, chặn XML-RPC, readme/config và các wizard install/setup không dùng trên site đã cài. PHP: tắt hiển thị lỗi và `expose_php`, vẫn ghi log. Không sửa `.htaccess` để thay cho Nginx.
-- Converter for Media vẫn **tắt**; Image Watermark giữ hoạt động. Không sửa core hoặc vendor. Chỉ chỉnh quyền truy cập của file ứng dụng theo yêu cầu.
+- Trạng thái lịch sử lúc hardening: Converter tắt. Đợt sửa WebP sau đó đã bật lại theo rewrite Nginx, kiểm tra Accept/MIME/fallback và watermark trên LocalWP thật; xem [hướng dẫn hiện tại](../../docs/installation/README.md). Image Watermark giữ hoạt động. Không sửa core hoặc vendor. Chỉ chỉnh quyền truy cập của file ứng dụng theo yêu cầu.
 
 ## Bằng chứng và tài liệu
 
@@ -32,3 +32,11 @@ Người dùng đã chạy WPScan 4.1.0 bằng Docker trên LocalWP và cung c�
 - [Cấu hình module](evidence/hardening-settings.png), [khóa đăng nhập thực tế](evidence/login-lockout.png), [gallery sau hardening](evidence/gallery-after.png). Ảnh khóa đã làm mờ trường username thử; ảnh WPS đã che hoàn toàn trường slug bằng vùng đậm; không có thanh địa chỉ, token, cookie, password hoặc URL đăng nhập mới. Có thêm [cấu hình URL đã che](evidence/wps-login-redacted.png) và [redirect mặc định](evidence/wps-redirect.png).
 
 Sao lưu site, SQL, cấu hình LocalWP và raw scan nằm ở thư mục riêng mode 700 dưới `$HOME/.local/share/lang-kinh-security/`; file chứa dữ liệu nhạy cảm mode 600. Có bản bổ sung sau khi Wordfence được đăng ký để giữ cấu hình mới. Không đưa các bản này vào Git. Tên/URL đăng nhập và hướng dẫn truy cập thật chỉ có trong hồ sơ riêng, không trong tài liệu công khai này.
+
+## Bàn giao hiện tại và hình minh chứng
+
+Inventory JSON cũ là ảnh chụp lịch sử, không được sửa thành lần kiểm tra mới. Xem [báo cáo học phần](../report/README.md), [hồi quy LocalWP mới](../report/verification-localwp.json) và [restore riêng](../../database/restore-verification.json). Sanitizer hiện có test che toàn bộ Authorization/Bearer/Basic và Cookie, không chỉ tên scheme.
+
+![Hardening LocalWP hiện tại](../report/figures/hardening-current.png)
+
+![Network WebP sau sửa](../report/figures/network-webp.png)

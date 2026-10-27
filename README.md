@@ -11,7 +11,7 @@ Xem [hướng dẫn cài đặt, nhập tác phẩm và phạm vi tính năng](a
 ## Cấu trúc
 
 - `astra-child/`: mã giao diện, trang chủ, bộ lọc, lightbox và ảnh minh họa đi kèm.
-- `media-assets/`: 30 ảnh gốc của dự án.
+- `media-assets/`: tài sản ảnh gốc hiện có; quyền từng ảnh cần bổ sung hồ sơ, xem THIRD-PARTY-NOTICES.md.
 - `scripts/build-demo-watermarks.php`: tạo lại 30 bản watermark bằng Image Watermark, không sửa ảnh gốc.
 
 Có thể cài thủ công bằng cách copy `astra-child` vào `wp-content/themes/` trên site LocalWP. Giữ theme cha `astra` bên cạnh, không lồng child theme vào thư mục Astra.
@@ -39,3 +39,30 @@ Sanitizer yêu cầu `--metadata /đường/dẫn/riêng/runner.json`, chứa `v
 Kiểm thử trên WordPress riêng: xem [tests/README.md](tests/README.md).
 
 Watermark tự động và WebP được xử lý bằng plugin; xem [bảng kiểm kê theme/plugin/license](PLUGIN-LICENSES.md). Phần 3 đã có cấu hình bảo mật và kiểm chứng trên LocalWP thật: Wordfence, giới hạn đăng nhập, URL đăng nhập riêng, chính sách mật khẩu, Nginx và phân quyền file; xem [hồ sơ ATTT](docs/security/README.md). WPScan trước/sau đã chạy; lần Docker bổ sung do người dùng thực hiện đã có API OK (Free, dùng 3 request, còn 19). [Báo cáo API và giới hạn độ phủ CVE](docs/security/WPSCAN-API-USER-RUN.md) ghi rõ passive chưa nhận diện core/plugin, không kết luận “không có lỗ hổng”. Database dùng các bảng WordPress mặc định; không cần SQL schema riêng. Không commit mật khẩu, cấu hình kết nối hay database chứa thông tin nhạy cảm lên GitHub công khai.
+
+## Bộ bàn giao và báo cáo học phần
+
+- [Cài đặt và khôi phục đầy đủ](docs/installation/README.md): môi trường, Astra/child theme, plugin, SQL, media, admin mới, Nginx/WebP, bảo mật, Stop/Start và xử lý lỗi.
+- [Database demo đã ẩn danh](database/README.md), [SQL](database/gallery-demo.sql), [manifest media](database/media-manifest.json) và [kết quả import/restore riêng](database/restore-verification.json). SQL có nguồn từ clone site thật; hai bài demo bổ sung chỉ ở clone, ảnh riêng được thay bằng ảnh mẫu có sẵn. Không có mật khẩu mặc định hoặc key/site config thật.
+- [Báo cáo LaTeX và PDF](docs/report/README.md), [WBS đề xuất 5 người](docs/report/WBS.md). Không xác nhận đóng góp theo tên; nhóm tự điền thông tin học phần và repo nộp cuối.
+- [Phạm vi license/copyright và quyền ảnh](THIRD-PARTY-NOTICES.md): giữ LICENSE gốc và license riêng của thành phần; quyền ảnh không tự được MIT/GPL bảo đảm.
+
+![Giao diện LocalWP hiện tại](docs/report/figures/home-desktop.png)
+
+![WebP trên Nginx qua DevTools thật](docs/report/figures/network-webp.png)
+
+![Bản demo khôi phục trên môi trường riêng](docs/report/figures/restore-demo.png)
+
+Cấu trúc bàn giao (giữ nguyên đường dẫn source đang dùng):
+
+```text
+astra-child/                 # functions.php, inc/, style.css, js/, ảnh mẫu
+security/lang-kinh-security/ # module tự viết, không phải vendor
+config/nginx/               # snippet WebP; hardening ở security/
+database/                   # SQL sạch, manifest, kết quả restore
+docs/installation/          # cài đặt/khôi phục từ đầu
+docs/security/              # bằng chứng bảo mật theo lịch sử
+docs/report/                # LaTeX, references, figures, PDF/DOCX
+scripts/                    # chuẩn bị clone, media, sanitizer, build/QA
+tests/                      # kiểm thử độc lập và tích hợp có guard
+```

@@ -72,6 +72,8 @@ def safe(value):
         token = os.environ.get('WPSCAN_API_TOKEN')
         if token:
             value = value.replace(token, '[REDACTED]')
+        # A header credential includes its scheme and ALL subsequent credentials.
+        value = re.sub(r'(?im)((?:proxy-authorization|authorization|set-cookie|cookie)\s*[:=]\s*)[^\r\n]*', r'\1[REDACTED]', value)
         value = re.sub(r'(?i)((?:api[-_]?token|password|cookie|authorization|secret)\s*[:=]\s*)[^&\s]+', r'\1[REDACTED]', value)
         value = re.sub(r'(https?://)[^/@\s]+:[^/@\s]+@', r'\1[REDACTED]@', value)
     return value

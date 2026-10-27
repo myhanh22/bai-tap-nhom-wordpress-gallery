@@ -60,7 +60,7 @@ Các mức dưới đây là **đánh giá rủi ro cấu hình có ngữ cảnh
 | WP-Cron/robots được tool liệt kê | Findings trước/sau có `wp_cron`, `robots_txt` | Core/Server | Low/thông tin: endpoint tiêu chuẩn, chưa xác nhận DoS/lỗ hổng | Giữ để scheduler/plugin hoạt động; cân nhắc cron hệ thống/rate limit khi đưa lên production | Không đánh dấu là CVE hoặc tắt bừa chức năng nền |
 | Phạm vi đối chiếu CVE chưa đầy đủ | Các lần cũ thiếu API; lần Docker mới API OK nhưng passive không nhận diện core/plugin | Quy trình kiểm tra | Medium/thiếu bằng chứng về độ phủ, không phải CVE xác nhận | Dùng token đang hoạt động để đối chiếu từng slug/phiên bản với inventory; không cần cấp lại token chỉ để chứng minh API OK | API đã xác thực theo log người dùng; toàn bộ core/plugin chưa được chứng minh bao phủ |
 
-Không thay ảnh đại diện/banner hoặc tác phẩm thật để “sửa” cảnh báo. Không bật Converter for Media. Không nâng core/theme/plugin ngoài các plugin bảo mật được yêu cầu mà không kiểm tra tương thích riêng.
+Không thay ảnh đại diện/banner hoặc tác phẩm thật để “sửa” cảnh báo. Trong đợt hardening lịch sử không bật Converter; trạng thái WebP mới ở README và hướng dẫn bàn giao. Không nâng core/theme/plugin ngoài các plugin bảo mật được yêu cầu mà không kiểm tra tương thích riêng.
 
 ## Bằng chứng ảnh và phần cần bổ sung
 

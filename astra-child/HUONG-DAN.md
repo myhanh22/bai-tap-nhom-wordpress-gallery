@@ -80,7 +80,7 @@ Chữ watermark là nhận diện bộ sưu tập minh họa, không thay thế 
 
 Đã có giao diện, chủ đề/album, tác giả, lightbox, lazy loading, escape đầu ra trong template (`esc_html`, `esc_attr`, `esc_url`) và form upload chỉ dành cho tài khoản được phép. Ảnh mới được lưu ở trạng thái chờ duyệt.
 
-Watermark dùng plugin; WebP vẫn tắt và chưa hoàn tất cấu hình Nginx. Phần 3 đã triển khai module bảo mật độc lập theme, Wordfence WAF Basic, LLAR 5 lần sai/15 phút, URL đăng nhập riêng bằng WPS Hide Login, chính sách mật khẩu và cấu hình Nginx bền vững. Đã chạy WPScan trước/sau và kiểm thử sau Stop/Start LocalWP thật; xem [hồ sơ ATTT và giới hạn xác minh](../docs/security/README.md). URL mới và hướng dẫn truy cập riêng được giữ ngoài Git; mật khẩu quản trị hiện có không đổi. Không tự bật Converter for Media. CSS trang login là CSS mẫu; không được nạp vào màn hình đăng nhập trong phiên bản này.
+Watermark dùng plugin; WebP vẫn tắt và chưa hoàn tất cấu hình Nginx. Phần 3 đã triển khai module bảo mật độc lập theme, Wordfence WAF Basic, LLAR 5 lần sai/15 phút, URL đăng nhập riêng bằng WPS Hide Login, chính sách mật khẩu và cấu hình Nginx bền vững. Đã chạy WPScan trước/sau và kiểm thử sau Stop/Start LocalWP thật; xem [hồ sơ ATTT và giới hạn xác minh](../docs/security/README.md). URL mới và hướng dẫn truy cập riêng được giữ ngoài Git; mật khẩu quản trị hiện có không đổi. WebP hiện đã được kiểm chứng trên LocalWP với rewrite Nginx; không dùng Pass Thru cho themes, xem README của repo. CSS trang login là CSS mẫu; không được nạp vào màn hình đăng nhập trong phiên bản này.
 
 Không chứa database, mật khẩu hoặc `wp-config.php`. Việc kích hoạt theme không thay hoặc xóa nội dung WordPress hiện có. Khi đổi sang theme khác, Tác phẩm sẽ không hiện trong menu quản trị, nhưng vẫn được giữ trong database; kích hoạt lại child theme để truy cập.
 
@@ -91,3 +91,9 @@ Mã theme: GPL-2.0-or-later (tương thích Astra/WordPress). Theme cha Astra: G
 ## Bổ sung kết quả WPScan API
 
 Lần Docker WPScan 4.1.0 người dùng chạy ngày 27/10/2026 đã báo **API OK, Free, dùng 3 request, còn 19**. Agent đối chiếu log, che hostname và cập nhật [báo cáo bổ sung](../docs/security/WPSCAN-API-USER-RUN.md); không tự nhận đã thực thi lần Docker. Chế độ passive không nhận diện core/plugin nên chưa chứng minh độ phủ CVE cho toàn bộ thành phần. Không yêu cầu nhập lại token khi đã có API OK; không đưa giá trị token vào Git. Cập nhật này chỉ bổ sung tài liệu, giữ nguyên thiết kế, banner và tác phẩm.
+
+## Bộ bàn giao
+
+Xem [cài đặt/khôi phục](../docs/installation/README.md), [SQL demo và phạm vi ẩn danh](../database/README.md), [báo cáo LaTeX/PDF](../docs/report/README.md). SQL không chứa ảnh nhị phân hoặc mật khẩu mặc định; cần phục hồi media từ manifest và tạo admin mới. Không nhập SQL demo lên site thật có dữ liệu.
+
+![Giao diện LocalWP hiện tại](../docs/report/figures/home-desktop.png)

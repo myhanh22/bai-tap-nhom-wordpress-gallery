@@ -77,3 +77,18 @@ Sau triển khai 2.4.0 lên LocalWP: trang chủ và `/dang-tac-pham/` HTTP 200;
 ## ATTT trên LocalWP thật
 
 `security-local.cjs` và `scripts/security-local-fixtures.php` là bộ kiểm thử có kiểm soát cho task Phần 3, **khác với** các test WordPress riêng bên trên. Cần private config ngoài Git có fixture mới, backup và biến `LK_ALLOW_LOCAL_SECURITY_FIXTURES=1`; không dùng tài khoản quản trị thật để thử sai. Bộ test đã chạy trên `baitapnhom1.local` sau Stop/Start thật. Các fixture của đợt này đã dọn, không chạy lại với file cấu hình cũ. Xem [hồ sơ và bằng chứng đã lọc](../docs/security/README.md). Không có password, cookie, token hoặc slug đăng nhập riêng trong code test.
+
+## Kiểm chứng LocalWP và bàn giao cập nhật
+
+Phần Pass Thru/môi trường riêng phía trên là lịch sử, chưa phải kết quả triển khai mới. Đợt sửa sau đã dùng rewrite Nginx thật: WebP/JPG negotiation, Vary, watermark, srcset, lightbox/mobile và Stop/Start qua. [Hồi quy LocalWP mới](../docs/report/verification-localwp.json) và [restore riêng](../database/restore-verification.json) được tách nguồn bằng chứng.
+
+Chạy test độc lập:
+
+```sh
+python3 -m unittest discover -s tests -p test_sanitize_wpscan.py -v
+php tests/upload-limits.php
+```
+
+Test sanitizer dùng dữ liệu tổng hợp (không phải log khai thác), kiểm tra metadata/hash/exit/API/phiên bản và che Authorization/Cookie. Không chạy fixture xóa trang/mật khẩu lên site thật nếu không có guard/cấu hình riêng.
+
+![WebP thật sau sửa](../docs/report/figures/network-webp.png)

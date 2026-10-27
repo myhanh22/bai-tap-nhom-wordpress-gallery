@@ -31,6 +31,8 @@
 | Hai upload liên tiếp, hiển thị cùng 30 mẫu | Đạt | Hai ID pending có featured image, một bài duyệt xuất hiện cùng đủ 30 mẫu; fixture đã dọn |
 | Album/lọc/tìm/lightbox/banner/mobile | Đạt | Kiểm thử sau Stop/Start; banner không đổi khi duyệt ảnh mới; mobile không tràn ngang |
 | Không lỗi do quyền, không lỗi PHP/JS cuối kỳ | Đạt trong luồng đã chạy | Upload/Watermark thành công; `regression-localwp.json`, `final-verification.json` ghi log slice cuối và lỗi JS |
-| Giữ nguyên tác phẩm/ảnh đại diện/banner/plugin WebP | Đạt | `preservation.json`; Converter vẫn tắt; fingerprint dữ liệu gốc và theme mods không đổi |
+| Giữ nguyên tác phẩm/ảnh đại diện/banner; trạng thái WebP theo đợt | Đạt | `preservation.json`; Converter vẫn tắt; fingerprint dữ liệu gốc và theme mods không đổi |
 
 Không tự quy đổi thành điểm. Các mục thiếu độ phủ CVE/ảnh bổ sung không được đánh dấu hoàn thành toàn bộ. API token đã hoạt động trong lần bổ sung người dùng cung cấp.
+
+Các hàng về Converter tắt phản ánh đợt hardening cũ. Đợt sửa WebP sau đã bật Converter + Nginx rewrite; không tái ghi inventory/scan JSON lịch sử. Xem [hướng dẫn hiện tại](../installation/README.md).

@@ -51,6 +51,13 @@ class SanitizerTest(unittest.TestCase):
             self.assertNotEqual(r.returncode,0)
             self.assertFalse((d/'out').exists())
 
+    def test_complete_authorization_header_redacted(self):
+        for header in ('Authorization: Bearer SYNTHETIC_CREDENTIAL', 'authorization: Basic SYNTHETIC_CREDENTIAL', 'Proxy-Authorization: Negotiate SYNTHETIC_CREDENTIAL', 'Cookie: first=SYNTHETIC_CREDENTIAL; second=SYNTHETIC_CREDENTIAL'):
+            raw=self.complete();raw['interesting_findings']=[{'to_s':header+'\nServer: nginx','type':'headers'}]
+            _,data=self.run_scan(raw)
+            self.assertNotIn('SYNTHETIC_CREDENTIAL',json.dumps(data))
+            self.assertIn('Server: nginx',data['findings'][0]['summary'])
+
     def test_blocked(self):
         _, data = self.run_scan(dict(target_url='http://example.local',scan_aborted='HTTP 403'),code=4)
         self.assertEqual(data['exit_code'],4)

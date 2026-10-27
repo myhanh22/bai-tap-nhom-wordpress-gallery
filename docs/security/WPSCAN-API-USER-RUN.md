@@ -56,4 +56,4 @@ Tuy nhiên, không thể kết luận “không có lỗ hổng”:
 
 Bước bổ sung để tăng độ phủ: trong terminal đang có token, đối chiếu danh sách plugin/theme cài thực tế với chế độ nhận diện mixed/known locations hoặc truy vấn API cho từng slug và phiên bản, ghi cả component API không có dữ liệu. Chỉ quét LocalWP của nhóm, không dùng danh sách mật khẩu, không brute-force tài khoản thật. Lưu JSON ngoài Git và kiểm tra quota trước; không cập nhật core/vendor chỉ dựa vào cảnh báo phiên bản.
 
-Không đổi thiết kế, banner, ảnh đại diện hoặc dữ liệu tác phẩm trong lần cập nhật báo cáo này. Converter for Media vẫn giữ tắt.
+Không đổi thiết kế, banner, ảnh đại diện hoặc dữ liệu tác phẩm trong lần cập nhật báo cáo này. Converter for Media giữ tắt trong đợt đối chiếu log này; đợt sửa WebP tiếp theo đã bật theo rewrite Nginx và kiểm chứng, xem README hiện tại.
