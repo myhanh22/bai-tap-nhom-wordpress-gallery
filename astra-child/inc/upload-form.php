@@ -10,43 +10,33 @@ add_action( 'after_switch_theme', 'lk_create_upload_page' );
 /** Create the upload page on theme activation without duplicating existing pages. */
 function lk_create_upload_page() {
     if ( get_page_by_path( 'dang-tac-pham' ) ) {
-        return;
+        return true;
     }
 
-    wp_insert_post(
+    $page_id = wp_insert_post(
         array(
             'post_type'    => 'page',
             'post_status'  => 'publish',
             'post_title'   => 'Đăng tác phẩm',
             'post_name'    => 'dang-tac-pham',
             'post_content' => '[lk_upload_form]',
-        )
+        ),
+        true
     );
+    return ! is_wp_error( $page_id ) && $page_id > 0;
 }
 
-/**
- * Render the upload form and store approved-type image submissions as pending works.
- * A logged-in author/editor with upload_files and edit_posts capabilities is required.
- */
-function lk_upload_form_shortcode() {
-    $page_url = get_permalink();
-    if ( ! is_user_logged_in() ) {
-        $login_url = wp_login_url( $page_url );
-        return '<section class="lk-upload"><p>Đăng nhập bằng tài khoản cộng tác viên để gửi tác phẩm.</p><p><a href="' . esc_url( $login_url ) . '">Đăng nhập</a></p></section>';
+/** Process submissions before the template sends headers. */
+add_action( 'template_redirect', 'lk_handle_upload' );
+function lk_handle_upload() {
+    if ( ! is_user_logged_in() || ! current_user_can( 'upload_files' ) || ! current_user_can( 'edit_lk_photos' ) ) {
+        return;
     }
-
-    if ( ! current_user_can( 'upload_files' ) || ! current_user_can( 'edit_posts' ) ) {
-        return '<section class="lk-upload"><p>Tài khoản hiện tại chưa được cấp quyền tải ảnh lên.</p></section>';
-    }
-
+    $page_url = remove_query_arg( 'lk_upload', get_permalink() ?: home_url( '/dang-tac-pham/' ) );
     $notice = '';
-    $notice_class = 'error';
     $method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '';
 
-    if ( isset( $_GET['lk_upload'] ) && 'pending' === sanitize_key( wp_unslash( $_GET['lk_upload'] ) ) ) {
-        $notice = 'Tác phẩm đã được gửi và đang chờ quản trị viên duyệt.';
-        $notice_class = 'success';
-    } elseif ( 'POST' === $method && isset( $_POST['lk_upload_submit'] ) ) {
+    if ( 'POST' === $method && isset( $_POST['lk_upload_submit'] ) ) {
         $nonce = isset( $_POST['lk_upload_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['lk_upload_nonce'] ) ) : '';
         if ( ! wp_verify_nonce( $nonce, 'lk_upload_photo' ) ) {
             $notice = 'Phiên gửi biểu mẫu đã hết hạn. Hãy tải lại trang và thử lại.';
@@ -127,13 +117,32 @@ function lk_upload_form_shortcode() {
                             }
 
                             $redirect_url = $page_url ? $page_url : home_url( '/dang-tac-pham/' );
-                            wp_safe_redirect( add_query_arg( 'lk_upload', 'pending', $redirect_url ) );
+                            wp_safe_redirect( add_query_arg( 'lk_upload', 'pending', $redirect_url ), 303 );
                             exit;
                         }
                     }
                 }
             }
         }
+    }
+
+    $GLOBALS['lk_upload_error'] = $notice;
+}
+
+/** Render the login-protected submission form. */
+function lk_upload_form_shortcode() {
+    $page_url = remove_query_arg( 'lk_upload', get_permalink() ?: home_url( '/dang-tac-pham/' ) );
+    if ( ! is_user_logged_in() ) {
+        return '<section class="lk-upload"><p>Đăng nhập bằng tài khoản tác giả để gửi tác phẩm.</p><p><a href="' . esc_url( wp_login_url( $page_url ) ) . '">Đăng nhập</a></p></section>';
+    }
+    if ( ! current_user_can( 'upload_files' ) || ! current_user_can( 'edit_lk_photos' ) ) {
+        return '<section class="lk-upload"><p>Tài khoản hiện tại chưa được cấp quyền tải ảnh lên.</p></section>';
+    }
+    $notice = isset( $GLOBALS['lk_upload_error'] ) ? $GLOBALS['lk_upload_error'] : '';
+    $notice_class = 'error';
+    if ( 'GET' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) && isset( $_GET['lk_upload'] ) && 'pending' === sanitize_key( wp_unslash( $_GET['lk_upload'] ) ) ) {
+        $notice = 'Tác phẩm đã được gửi và đang chờ quản trị viên duyệt.';
+        $notice_class = 'success';
     }
 
     $topics = get_terms(
@@ -150,7 +159,7 @@ function lk_upload_form_shortcode() {
         <?php if ( $notice ) : ?>
             <p class="lk-upload-message lk-upload-message--<?php echo esc_attr( $notice_class ); ?>" role="status"><?php echo esc_html( $notice ); ?></p>
         <?php endif; ?>
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" action="<?php echo esc_url( $page_url ); ?>" enctype="multipart/form-data">
             <?php echo wp_nonce_field( 'lk_upload_photo', 'lk_upload_nonce', true, false ); ?>
             <p>
                 <label for="lk-photo-title">Tên tác phẩm</label>

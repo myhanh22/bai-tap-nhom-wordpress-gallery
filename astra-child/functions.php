@@ -17,6 +17,9 @@ add_action( 'wp_enqueue_scripts', function () {
 add_action( 'init', function () {
     register_post_type( 'lk_photo', array(
         'labels' => array( 'name' => 'Tác phẩm', 'singular_name' => 'Tác phẩm', 'add_new_item' => 'Thêm tác phẩm', 'edit_item' => 'Sửa tác phẩm', 'featured_image' => 'Ảnh tác phẩm', 'set_featured_image' => 'Chọn ảnh tác phẩm' ),
+        'capability_type' => array( 'lk_photo', 'lk_photos' ),
+        'map_meta_cap' => true,
+        'taxonomies' => array( 'lk_topic' ),
         'public' => true, 'show_in_rest' => true, 'menu_icon' => 'dashicons-format-gallery',
         'supports' => array( 'title', 'editor', 'thumbnail', 'author', 'excerpt' ),
         'rewrite' => array( 'slug' => 'tac-pham' ),
@@ -90,3 +93,28 @@ function lk_gallery_items() {
 }
 
 require_once get_stylesheet_directory() . '/inc/upload-form.php';
+
+/** Versioned setup also runs when files are updated on an already active theme. */
+add_action( 'init', 'lk_upgrade_theme', 20 );
+function lk_upgrade_theme() {
+    if ( '2.2.0' === get_option( 'lk_setup_version' ) ) {
+        return;
+    }
+    $submit_caps = array( 'edit_lk_photos', 'delete_lk_photos' );
+    $review_caps = array_merge( $submit_caps, array(
+        'publish_lk_photos', 'edit_others_lk_photos', 'delete_others_lk_photos',
+        'read_private_lk_photos', 'edit_private_lk_photos', 'delete_private_lk_photos',
+        'edit_published_lk_photos', 'delete_published_lk_photos',
+    ) );
+    foreach ( array( 'administrator', 'editor', 'author' ) as $role_name ) {
+        $role = get_role( $role_name );
+        if ( ! $role ) { continue; }
+        foreach ( 'author' === $role_name ? $submit_caps : $review_caps as $cap ) {
+            $role->add_cap( $cap );
+        }
+    }
+    if ( lk_create_upload_page() ) {
+        flush_rewrite_rules( false );
+        update_option( 'lk_setup_version', '2.2.0' );
+    }
+}

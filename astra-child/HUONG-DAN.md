@@ -32,9 +32,10 @@ Lưu ý: ảnh mẫu nằm trong theme để có giao diện ngay; chúng không
 
 ## Gửi tác phẩm từ frontend
 
-- Child theme tạo trang **Đăng tác phẩm** tại `/dang-tac-pham/` khi được kích hoạt. Trang yêu cầu đăng nhập WordPress.
+- Child theme tạo trang **Đăng tác phẩm** tại `/dang-tac-pham/` khi được kích hoạt hoặc cập nhật lên 2.2.0 (ở lượt truy cập tiếp theo). Không tạo trùng trang đã có. Trang yêu cầu đăng nhập WordPress.
 - Quản trị viên tạo tài khoản cho người gửi tại **Người dùng → Thêm mới**, chọn vai trò **Tác giả (Author)**. Không bật đăng ký tài khoản công khai.
-- Form nhận JPG, PNG hoặc WebP, tối đa 12 MB; tiêu đề được lọc, có nonce chống CSRF và kiểm tra quyền `upload_files`/`edit_posts`.
+- Form nhận JPG, PNG hoặc WebP, tối đa 12 MB; tiêu đề được lọc, có nonce chống CSRF và kiểm tra quyền `upload_files`/`edit_lk_photos`.
+- Author được tạo/sửa tác phẩm của mình đang chờ duyệt, không có quyền xuất bản qua quản trị hoặc REST API. Administrator và Editor có quyền duyệt/xuất bản. Quyền bài viết thông thường không thay đổi.
 - Ảnh được lưu trong Media Library, tạo bản ghi attachment và CPT `lk_photo` trong database WordPress, đặt làm ảnh đại diện và trạng thái **Chờ duyệt**. Quản trị viên duyệt trong **Tác phẩm** trước khi ảnh xuất hiện công khai.
 - Không cần tự tạo bảng SQL. WordPress lưu nội dung trong các bảng posts/postmeta/taxonomy hiện có. Xuất SQL chỉ khi cần bàn giao bản sao đã loại dữ liệu tài khoản/cấu hình nhạy cảm.
 - Đăng nhập dùng màn hình WordPress mặc định; người gửi quay lại trang gửi ảnh sau khi đăng nhập.
