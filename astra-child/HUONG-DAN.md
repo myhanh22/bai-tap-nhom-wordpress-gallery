@@ -87,3 +87,7 @@ Không chứa database, mật khẩu hoặc `wp-config.php`. Việc kích hoạt
 ## Giấy phép
 
 Mã theme: GPL-2.0-or-later (tương thích Astra/WordPress). Theme cha Astra: GPL-2.0-or-later theo khai báo của theme; cần ghi phiên bản cài thực tế vào bảng kiểm kê. Quyền sử dụng các ảnh gốc cần kiểm tra riêng; giấy phép của mã không tự xác nhận bản quyền ảnh.
+
+## Bổ sung kết quả WPScan API
+
+Lần Docker WPScan 4.1.0 người dùng chạy ngày 27/10/2026 đã báo **API OK, Free, dùng 3 request, còn 19**. Agent đối chiếu log, che hostname và cập nhật [báo cáo bổ sung](../docs/security/WPSCAN-API-USER-RUN.md); không tự nhận đã thực thi lần Docker. Chế độ passive không nhận diện core/plugin nên chưa chứng minh độ phủ CVE cho toàn bộ thành phần. Không yêu cầu nhập lại token khi đã có API OK; không đưa giá trị token vào Git. Cập nhật này chỉ bổ sung tài liệu, giữ nguyên thiết kế, banner và tác phẩm.

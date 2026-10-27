@@ -23,7 +23,8 @@
 | Quyền thư mục/file/config đúng owner | Đạt | Đã kiểm tra cùng UID PHP/Nginx; 755/644, config 400; PHP đọc được, upload và watermark tạo file được; `permissions.json`, `final-verification.json` |
 | Không chmod rộng ngoài application | Đạt | Chỉ `app/public`; không đổi owner/group, không 777, bỏ qua symlink |
 | WPScan trước/sau chạy thực tế | Đạt | WPScan 3.8.28; scope LocalWP; exit 0; thời gian/request ở báo cáo JSON |
-| CVE/vulnerability intelligence đầy đủ | Chưa đạt | Không có WPScan API token; passive plugin detection không đầy đủ. Không kết luận “không lỗ hổng” |
+| API WPScan xác thực hoạt động | Đạt theo log người dùng | Docker WPScan 4.1.0: API OK, Free, dùng 3 request, còn 19; `wpscan-retry.txt`, `evidence/wpscan-api-user-run.json` |
+| CVE/vulnerability intelligence đầy đủ | Chưa đầy đủ | API đã OK nhưng lần passive không nhận diện core/plugin; chưa đủ đối chiếu toàn inventory. Xem `WPSCAN-API-USER-RUN.md`; không kết luận “không lỗ hổng” |
 | Bảng phân loại và căn cứ | Đạt | `SCAN-AND-ASSESSMENT.md`; phân biệt cảnh báo cấu hình với lỗ hổng đã xác nhận, không gán CVE suy đoán |
 | Ảnh cấu hình/kết quả thật | Đạt một phần hồ sơ | Có ảnh module, khóa thực tế, gallery. Có ảnh WPS đã che slug/redirect; còn ảnh trang Wordfence/LLAR nguyên bản và ảnh console WPScan; danh sách cần bổ sung ở báo cáo |
 | Admin/Editor duyệt, Author không tự publish | Đạt | Tài khoản thử trên LocalWP; REST 403, wp-admin vẫn pending, Editor publish, Admin đọc bài pending |
@@ -32,4 +33,4 @@
 | Không lỗi do quyền, không lỗi PHP/JS cuối kỳ | Đạt trong luồng đã chạy | Upload/Watermark thành công; `regression-localwp.json`, `final-verification.json` ghi log slice cuối và lỗi JS |
 | Giữ nguyên tác phẩm/ảnh đại diện/banner/plugin WebP | Đạt | `preservation.json`; Converter vẫn tắt; fingerprint dữ liệu gốc và theme mods không đổi |
 
-Không tự quy đổi thành điểm. Các mục thiếu token/ảnh bổ sung không được đánh dấu hoàn thành toàn bộ.
+Không tự quy đổi thành điểm. Các mục thiếu độ phủ CVE/ảnh bổ sung không được đánh dấu hoàn thành toàn bộ. API token đã hoạt động trong lần bổ sung người dùng cung cấp.

@@ -1,10 +1,14 @@
 # Quét lỗ hổng và đánh giá có căn cứ
 
+## Bổ sung mới có API token
+
+Người dùng cung cấp lần Docker WPScan 4.1.0: API OK, plan Free, dùng 3 request, còn 19. Đã đối chiếu với `wpscan-retry.txt` trên máy. Xem [báo cáo riêng](WPSCAN-API-USER-RUN.md); log đã che hostname. Các kết quả 3.8.28 bên dưới được giữ nguyên theo lịch sử, không tự nhận agent đã chạy lần Docker hoặc đánh đồng API thành công với quét CVE đầy đủ.
+
 ## Phạm vi và công cụ
 
 Chỉ quét `http://baitapnhom1.local` của nhóm trên máy Ubuntu. Không quét GitHub hoặc website ngoài nhóm, không chạy password attack/enumeration tài khoản thật. Công cụ tải definitions từ nguồn của chính WPScan là hoạt động cập nhật dữ liệu, không phải quét các nguồn này.
 
-Đã chạy **WPScan 3.8.28**, Ruby 3.2.3. Ruby được giải nén từ gói Ubuntu chính thức có kiểm tra digest APT vào thư mục tools riêng, WPScan cài qua RubyGems; không thay Ruby hệ thống. Docker daemon và Ruby/WPScan hệ thống không có sẵn, nhưng đã khắc phục để chạy được WPScan thực tế, không coi thiếu công cụ là lý do chỉ viết kế hoạch. Nmap/ZAP không được chạy và không có kết quả của hai công cụ này.
+Đã chạy **WPScan 3.8.28**, Ruby 3.2.3. Ruby được giải nén từ gói Ubuntu chính thức có kiểm tra digest APT vào thư mục tools riêng, WPScan cài qua RubyGems; không thay Ruby hệ thống. Ở thời điểm agent chuẩn bị các lần 3.8.28 trước đây, Docker daemon và Ruby/WPScan hệ thống không có sẵn, nhưng đã khắc phục để chạy được WPScan thực tế, không coi thiếu công cụ là lý do chỉ viết kế hoạch. Nmap/ZAP không được chạy và không có kết quả của hai công cụ này.
 
 Câu lệnh đã loại thông tin riêng:
 
@@ -34,7 +38,7 @@ Raw, console output và cấu hình riêng nằm ngoài Git. `scripts/sanitize-w
 
 ## Giới hạn dữ liệu
 
-**Không có WPScan API token.** Tool thông báo không xuất vulnerability data. Definitions dùng cho nhận diện, không thay thế vulnerability API. Chế độ plugin passive không phát hiện đầy đủ plugin đang cài; kiểm kê filesystem tách riêng trong `PLUGIN-LICENSES.md`. Danh sách plugin trống từ tool không có nghĩa website không có plugin hoặc plugin an toàn.
+**Các lần agent chạy 3.8.28 trước đây không có WPScan API token.** Tool khi đó thông báo không xuất vulnerability data. Lần Docker người dùng bổ sung sau đó đã có API OK, xem báo cáo riêng. Definitions dùng cho nhận diện, không thay thế vulnerability API. Chế độ plugin passive không phát hiện đầy đủ plugin đang cài; kiểm kê filesystem tách riêng trong `PLUGIN-LICENSES.md`. Danh sách plugin trống từ tool không có nghĩa website không có plugin hoặc plugin an toàn.
 
 Không gán CVE từ số phiên bản. `status: latest` chỉ là kết quả so với metadata WPScan tại thời điểm chạy, không chứng minh phiên bản không có lỗi hoặc dữ liệu luôn cập nhật. Wordfence WAF `enabled/basic` được đọc từ cấu hình thực; chưa kiểm chứng signature/cloud intelligence hoặc chạy malware scan Wordfence. Không suy từ việc có key thành “không còn malware”.
 
@@ -54,7 +58,7 @@ Các mức dưới đây là **đánh giá rủi ro cấu hình có ngữ cảnh
 | WAF chỉ Basic | Đọc `wfFirewall` mode enabled, protection basic | Plugin | Low/giới hạn triển khai: không chạy trước WordPress như Extended | Giữ Basic, không sửa core/.user.ini; muốn nâng cấp cần backup và kiểm thử riêng | Không tuyên bố Extended Protection hoặc hiệu quả chống mọi payload |
 | Header server còn fingerprint | Router LocalWP vẫn có thể trả `Server: nginx/1.26.1` | Server/router | Low: lộ thông tin, không xác nhận lỗi Nginx | Đã tắt expose PHP, server_tokens ở site; không đổi router dùng chung | Header PHP đã mất; không tuyên bố ẩn được mọi dấu vết |
 | WP-Cron/robots được tool liệt kê | Findings trước/sau có `wp_cron`, `robots_txt` | Core/Server | Low/thông tin: endpoint tiêu chuẩn, chưa xác nhận DoS/lỗ hổng | Giữ để scheduler/plugin hoạt động; cân nhắc cron hệ thống/rate limit khi đưa lên production | Không đánh dấu là CVE hoặc tắt bừa chức năng nền |
-| Thiếu vulnerability API và plugin coverage | `vuln_api.error`, passive plugins trống | Quy trình kiểm tra | Medium/thiếu bằng chứng: chưa đủ dữ liệu đối chiếu CVE | Người quản lý cấp API token riêng, quét lại và đối chiếu inventory thủ công | Chưa xác minh CVE; không kết luận “không có lỗ hổng” |
+| Phạm vi đối chiếu CVE chưa đầy đủ | Các lần cũ thiếu API; lần Docker mới API OK nhưng passive không nhận diện core/plugin | Quy trình kiểm tra | Medium/thiếu bằng chứng về độ phủ, không phải CVE xác nhận | Dùng token đang hoạt động để đối chiếu từng slug/phiên bản với inventory; không cần cấp lại token chỉ để chứng minh API OK | API đã xác thực theo log người dùng; toàn bộ core/plugin chưa được chứng minh bao phủ |
 
 Không thay ảnh đại diện/banner hoặc tác phẩm thật để “sửa” cảnh báo. Không bật Converter for Media. Không nâng core/theme/plugin ngoài các plugin bảo mật được yêu cầu mà không kiểm tra tương thích riêng.
 
@@ -66,7 +70,7 @@ Nếu báo cáo môn học yêu cầu đầy đủ ảnh màn hình giao diện 
 
 1. Wordfence Firewall hiển thị **Enabled / Basic Protection**; che key, email và URL riêng nếu xuất hiện. Không ghi thành Extended.
 2. LLAR Settings hiển thị 5 retries/15 phút, cửa sổ 15 phút; crop/che trường email/IP/username. Trạng thái này cũng đã có ảnh module và kiểm thử khóa thật.
-3. Console WPScan trước/sau cùng dòng cảnh báo không có API token; dùng bản summary đã lọc và không chụp raw chứa thông tin riêng. JSON đã lưu là kết quả chạy thật, không thay bằng kết quả mẫu.
+3. Console WPScan: phân biệt lần agent chạy trước không token và lần Docker có API OK; che hostname/token/tài khoản. Log và summary lần Docker đã lưu, có thể bổ sung ảnh terminal thực tế của người dùng. Không dựng ảnh console giả từ báo cáo.
 
 ## Nguồn chính thức
 
@@ -74,4 +78,4 @@ Nếu báo cáo môn học yêu cầu đầy đủ ảnh màn hình giao diện 
 - [Wordfence](https://wordpress.org/plugins/wordfence/), [Limit Login Attempts Reloaded](https://wordpress.org/plugins/limit-login-attempts-reloaded/), [WPS Hide Login](https://wordpress.org/plugins/wps-hide-login/).
 - [WPScan documentation](https://github.com/wpscanteam/wpscan/wiki/WPScan-User-Documentation): yêu cầu API token cho vulnerability data và các chế độ enumeration.
 
-File `wpscan-after-hardening.txt` xuất hiện bổ sung trong workspace, ghi công cụ 4.1.0 nhưng chưa xác minh nguồn/cách chạy trong đợt này. Đã bảo toàn nguyên bản ở hồ sơ riêng và che hostname trong bản repo; không dùng file đó để xác nhận API token hoặc thay thế bằng chứng JSON 3.8.28 do tool thực sự chạy.
+File `wpscan-after-hardening.txt` hiện ghi lần chạy bị WAF trả 403; giữ nguyên thay đổi của người dùng, không coi là quét hoàn tất. File `wpscan-retry.txt` là lần chạy lại do người dùng xác nhận và cung cấp đầy đủ câu lệnh/kết quả API OK; đã che hostname, lưu nguồn gốc trong summary riêng. Các JSON 3.8.28 trước đó không bị ghi đè.

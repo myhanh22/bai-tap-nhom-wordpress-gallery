@@ -4,6 +4,10 @@ Ngày thực hiện: **27/10/2026**, trên Ubuntu/LocalWP thật. Nhánh `huyyho
 
 Đây là hồ sơ cấu hình và kiểm chứng, **không phải chứng nhận không còn lỗ hổng**. Không dùng môi trường WordPress riêng làm bằng chứng cho các kết quả dưới đây. Những kiểm thử gallery trước đây ở `tests/README.md` là lịch sử riêng; đợt này dùng tài khoản và ảnh thử trên chính LocalWP rồi dọn sạch.
 
+## Bổ sung API token đã chạy thành công
+
+Người dùng đã chạy WPScan 4.1.0 bằng Docker trên LocalWP và cung cấp log: **API OK, Free, dùng 3 request, còn 19**. Đã đối chiếu file log và che hostname; xem [báo cáo bổ sung](WPSCAN-API-USER-RUN.md). Không trộn với các lần agent chạy 3.8.28 không có token. Phạm vi CVE vẫn chưa đầy đủ do passive không nhận diện core/plugin; không kết luận website không có lỗ hổng.
+
 ## Cấu hình thực tế
 
 - WordPress 7.1.3; Astra 4.14.1, child theme 2.4.1; PHP 8.2.29, Nginx 1.26.1, MySQL 8.4.0 của LocalWP.
@@ -20,7 +24,7 @@ Ngày thực hiện: **27/10/2026**, trên Ubuntu/LocalWP thật. Nhánh `huyyho
 
 - [Checklist](CHECKLIST.md): trạng thái từng yêu cầu và đường dẫn bằng chứng.
 - [Cấu hình và khôi phục](CONFIGURATION-RECOVERY.md): triển khai, rollback, lấy URL riêng, mở khóa.
-- [Quét và đánh giá](SCAN-AND-ASSESSMENT.md): phạm vi, câu lệnh, giới hạn API và đánh giá có căn cứ.
+- [Quét và đánh giá](SCAN-AND-ASSESSMENT.md): các lần quét trước và đánh giá cấu hình. [WPScan có API do người dùng chạy](WPSCAN-API-USER-RUN.md): kết quả bổ sung mới, nguồn bằng chứng và giới hạn độ phủ.
 - [HTTP trước](evidence/http-before.json), [HTTP sau](evidence/http-after.json).
 - [Stop/Start LocalWP](evidence/localwp-restart.json), [quyền ứng dụng](evidence/permissions.json), [đối chiếu mã gốc](evidence/source-integrity.json), [trạng thái plugin](evidence/plugin-status.json).
 - [Lần WAF chặn scanner](evidence/wpscan-waf-blocked.json), [WPScan trước](evidence/wpscan-before.json), [WPScan sau](evidence/wpscan-after.json): bản tóm tắt allowlist, không phải raw.
