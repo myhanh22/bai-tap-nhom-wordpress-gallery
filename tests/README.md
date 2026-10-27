@@ -73,3 +73,7 @@ Sau triển khai 2.4.0 lên LocalWP: trang chủ và `/dang-tac-pham/` HTTP 200;
 ## Banner cố định 2.4.1
 
 `hero.php` chạy trên WordPress riêng sau khi có fixture ảnh: banner mặc định không đổi khi xuất bản tác phẩm mới; chọn ảnh và chú thích riêng hoạt động; ID không phải ảnh bị từ chối; ảnh đã xóa trở về ảnh mặc định. Đăng ký bộ điều khiển trong Customizer cùng Astra thành công, dùng Media Control và quyền `edit_theme_options`. Test khôi phục theme mods và dọn bài tự tạo sau khi chạy. Không sửa ảnh đại diện của bài có sẵn.
+
+## ATTT trên LocalWP thật
+
+`security-local.cjs` và `scripts/security-local-fixtures.php` là bộ kiểm thử có kiểm soát cho task Phần 3, **khác với** các test WordPress riêng bên trên. Cần private config ngoài Git có fixture mới, backup và biến `LK_ALLOW_LOCAL_SECURITY_FIXTURES=1`; không dùng tài khoản quản trị thật để thử sai. Bộ test đã chạy trên `baitapnhom1.local` sau Stop/Start thật. Các fixture của đợt này đã dọn, không chạy lại với file cấu hình cũ. Xem [hồ sơ và bằng chứng đã lọc](../docs/security/README.md). Không có password, cookie, token hoặc slug đăng nhập riêng trong code test.

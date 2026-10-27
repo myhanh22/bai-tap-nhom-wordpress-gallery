@@ -80,7 +80,7 @@ Chữ watermark là nhận diện bộ sưu tập minh họa, không thay thế 
 
 Đã có giao diện, chủ đề/album, tác giả, lightbox, lazy loading, escape đầu ra trong template (`esc_html`, `esc_attr`, `esc_url`) và form upload chỉ dành cho tài khoản được phép. Ảnh mới được lưu ở trạng thái chờ duyệt.
 
-Watermark/WebP được cấu hình qua plugin trên site LocalWP. **Chưa có** cấu hình hardening, đổi URL đăng nhập, giới hạn đăng nhập hay báo cáo quét lỗ hổng. CSS trang login là CSS mẫu; không được nạp vào màn hình đăng nhập trong phiên bản này.
+Watermark dùng plugin; WebP vẫn tắt và chưa hoàn tất cấu hình Nginx. Phần 3 đã triển khai module bảo mật độc lập theme, Wordfence WAF Basic, LLAR 5 lần sai/15 phút, URL đăng nhập riêng bằng WPS Hide Login, chính sách mật khẩu và cấu hình Nginx bền vững. Đã chạy WPScan trước/sau và kiểm thử sau Stop/Start LocalWP thật; xem [hồ sơ ATTT và giới hạn xác minh](../docs/security/README.md). URL mới và hướng dẫn truy cập riêng được giữ ngoài Git; mật khẩu quản trị hiện có không đổi. Không tự bật Converter for Media. CSS trang login là CSS mẫu; không được nạp vào màn hình đăng nhập trong phiên bản này.
 
 Không chứa database, mật khẩu hoặc `wp-config.php`. Việc kích hoạt theme không thay hoặc xóa nội dung WordPress hiện có. Khi đổi sang theme khác, Tác phẩm sẽ không hiện trong menu quản trị, nhưng vẫn được giữ trong database; kích hoạt lại child theme để truy cập.
 

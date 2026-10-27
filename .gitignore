@@ -46,3 +46,6 @@ wp-config.php
 # Note: If you wish to whitelist themes,
 # uncomment the next line
 #/wp-content/themes
+# Security evidence: private captures, credentials, database backups stay outside Git.
+.security-private/
+docs/security/private/

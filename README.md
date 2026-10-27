@@ -32,4 +32,4 @@ WebP trên Nginx cần cấu hình riêng: không bật `themes` khi dùng Pass 
 
 Kiểm thử trên WordPress riêng: xem [tests/README.md](tests/README.md).
 
-Watermark tự động và WebP được xử lý bằng plugin; xem [bảng kiểm kê theme/plugin/license](PLUGIN-LICENSES.md). Còn phải hoàn thiện cấu hình hardening, quét lỗ hổng và hồ sơ báo cáo. Database dùng các bảng WordPress mặc định; không cần SQL schema riêng. Không commit mật khẩu, cấu hình kết nối hay database chứa thông tin nhạy cảm lên GitHub công khai.
+Watermark tự động và WebP được xử lý bằng plugin; xem [bảng kiểm kê theme/plugin/license](PLUGIN-LICENSES.md). Phần 3 đã có cấu hình bảo mật và kiểm chứng trên LocalWP thật: Wordfence, giới hạn đăng nhập, URL đăng nhập riêng, chính sách mật khẩu, Nginx và phân quyền file; xem [hồ sơ ATTT](docs/security/README.md). WPScan trước/sau đã chạy nhưng thiếu API token nên chưa đối chiếu CVE đầy đủ. Database dùng các bảng WordPress mặc định; không cần SQL schema riêng. Không commit mật khẩu, cấu hình kết nối hay database chứa thông tin nhạy cảm lên GitHub công khai.

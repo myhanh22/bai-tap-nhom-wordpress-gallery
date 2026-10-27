@@ -11,6 +11,10 @@ Phiên bản dưới đây là những gói được cài trong site LocalWP `ba
 | Twenty Twenty-Three | 1.7 | Không hoạt động | GPL-2.0-or-later | Theme mặc định WordPress |
 | Image Watermark — dFactory | 2.0.16 | Đang hoạt động | MIT | Watermark tự động khi upload |
 | Converter for Media — matt plugins | 6.7.0 | Đang tắt trên LocalWP | GPL-2.0-or-later | Tạo và phục vụ ảnh WebP |
+| Wordfence Security | 9.0.2 | Đang hoạt động, có key; WAF enabled/basic | GPL-3.0-or-later | WAF; login/password checks tương ứng tắt để tránh trùng |
+| Limit Login Attempts Reloaded | 3.3.10 | Đang hoạt động, app Local miễn phí | GPL-2.0-or-later | 5 lần sai / khóa 15 phút trên LocalWP |
+| WPS Hide Login | 1.9.19 | Đang hoạt động | GPL-2.0-or-later | URL đăng nhập riêng; redirect mặc định 404 |
+| Lăng Kính Security (nhóm 1) | 1.0.0 | Đang hoạt động, mã trong repo | GPL-2.0-or-later | Chính sách mật khẩu và hardening độc lập theme |
 
 ## Nguồn xác minh
 
@@ -20,3 +24,7 @@ Phiên bản dưới đây là những gói được cài trong site LocalWP `ba
 - Quyền sử dụng ảnh trong `media-assets/` là quyền riêng của từng ảnh, không được xác nhận bởi license của mã/theme/plugin.
 
 30 bản ảnh mẫu có watermark được tạo bằng renderer Image Watermark, font Open Sans từ plugin; không phân phối thêm file font hoặc sửa vendor. Bản gốc và bản watermark được giữ riêng trong theme. Watermark upload được cấu hình riêng tại Settings → Watermark. WebP trên Nginx chưa hoàn tất; xem HUONG-DAN.md trước khi bật lại Converter for Media.
+
+Đợt ATTT đối chiếu các gói mới với nguồn WordPress.org chính thức; không đưa mã vendor hoặc key vào repo. Wordfence được bật/đăng ký trong lúc thực hiện, giữ nguyên key đã có. Key hiện diện và onboarding đã hoàn tất không phải bằng chứng malware scan thành công. Chưa bật Extended Protection. Xem [hồ sơ bảo mật, kiểm thử thật và giới hạn API WPScan](docs/security/README.md).
+
+Nguồn bổ sung: [Wordfence](https://wordpress.org/plugins/wordfence/), [LLAR](https://wordpress.org/plugins/limit-login-attempts-reloaded/), [WPS Hide Login](https://wordpress.org/plugins/wps-hide-login/). Giấy phép lấy từ header/readme của gói đã cài. Module riêng: `security/lang-kinh-security/lang-kinh-security.php`.
