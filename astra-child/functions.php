@@ -88,3 +88,5 @@ function lk_gallery_items() {
     }
     return $items;
 }
+
+require_once get_stylesheet_directory() . '/inc/upload-form.php';

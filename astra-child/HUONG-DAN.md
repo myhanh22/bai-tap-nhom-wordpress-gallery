@@ -30,6 +30,22 @@
 
 Lưu ý: ảnh mẫu nằm trong theme để có giao diện ngay; chúng không tự nhập vào Media. Nên tải tác phẩm thật lên Media qua giao diện quản trị. Không cần sửa code để thay ảnh.
 
+## Gửi tác phẩm từ frontend
+
+- Child theme tạo trang **Đăng tác phẩm** tại `/dang-tac-pham/` khi được kích hoạt. Trang yêu cầu đăng nhập WordPress.
+- Quản trị viên tạo tài khoản cho người gửi tại **Người dùng → Thêm mới**, chọn vai trò **Tác giả (Author)**. Không bật đăng ký tài khoản công khai.
+- Form nhận JPG, PNG hoặc WebP, tối đa 12 MB; tiêu đề được lọc, có nonce chống CSRF và kiểm tra quyền `upload_files`/`edit_posts`.
+- Ảnh được lưu trong Media Library, tạo bản ghi attachment và CPT `lk_photo` trong database WordPress, đặt làm ảnh đại diện và trạng thái **Chờ duyệt**. Quản trị viên duyệt trong **Tác phẩm** trước khi ảnh xuất hiện công khai.
+- Không cần tự tạo bảng SQL. WordPress lưu nội dung trong các bảng posts/postmeta/taxonomy hiện có. Xuất SQL chỉ khi cần bàn giao bản sao đã loại dữ liệu tài khoản/cấu hình nhạy cảm.
+- Đăng nhập dùng màn hình WordPress mặc định; người gửi quay lại trang gửi ảnh sau khi đăng nhập.
+
+## Watermark và WebP
+
+- **Image Watermark**: vào **Settings → Watermark**, bật `Automatic Watermarking`, `Front-end Watermarking` và `Manual Watermarking`; chọn `All uploads` vì form tải ảnh tạo attachment trước khi gắn vào tác phẩm. Chọn các kích thước `thumbnail`, `medium`, `large`, `full` và `lk-gallery`; bật backup ảnh gốc để có thể phục hồi. Dùng watermark chữ “© Lăng Kính · Nhóm 1” hoặc logo nhóm có quyền sử dụng; đặt ở góc dưới, opacity khoảng 55–65%.
+- **Converter for Media**: vào **Settings → Settings → Converter for Media**, giữ output WebP, bật thư mục `uploads` và `themes` để tối ưu ảnh Media và ảnh mẫu trong child theme. LocalWP đang chạy Nginx; chọn `Pass Thru` nếu plugin báo chưa có rewrite, rồi kiểm tra diagnostics trong trang plugin. Chạy bulk optimization cho ảnh Media cũ.
+- Watermark ảnh cũ chỉ sau khi bật backup và thử trên một ảnh mẫu. Không tải logo watermark lên như ảnh tác phẩm.
+- Xem phiên bản/license trong [PLUGIN-LICENSES.md](../PLUGIN-LICENSES.md). Cập nhật bảng nếu site cài phiên bản khác.
+
 ## Sửa giao diện
 
 - `front-page.php`: nội dung banner, tên Lăng Kính, giới thiệu và cấu trúc trang chủ.
@@ -40,9 +56,9 @@ Lưu ý: ảnh mẫu nằm trong theme để có giao diện ngay; chúng không
 
 ## Phạm vi bài mẫu
 
-Đã có giao diện, chủ đề/album, tác giả, lightbox, lazy loading và escaping đầu ra trong template (`esc_html`, `esc_attr`, `esc_url`). Truy vấn chỉ đọc nội dung đã xuất bản, không có form upload công khai hay endpoint tùy chỉnh.
+Đã có giao diện, chủ đề/album, tác giả, lightbox, lazy loading, escape đầu ra trong template (`esc_html`, `esc_attr`, `esc_url`) và form upload chỉ dành cho tài khoản được phép. Ảnh mới được lưu ở trạng thái chờ duyệt.
 
-**Chưa có** watermark tự động, tự chuyển ảnh sang WebP, cấu hình plugin bảo mật, đổi URL đăng nhập, giới hạn đăng nhập hay báo cáo quét lỗ hổng. Đây vẫn là các phần nhóm phải làm tiếp theo đề bài. CSS trang login là CSS mẫu; không được nạp vào màn hình đăng nhập trong phiên bản này.
+Watermark/WebP được cấu hình qua plugin trên site LocalWP. **Chưa có** cấu hình hardening, đổi URL đăng nhập, giới hạn đăng nhập hay báo cáo quét lỗ hổng. CSS trang login là CSS mẫu; không được nạp vào màn hình đăng nhập trong phiên bản này.
 
 Không chứa database, mật khẩu hoặc `wp-config.php`. Việc kích hoạt theme không thay hoặc xóa nội dung WordPress hiện có. Khi đổi sang theme khác, Tác phẩm sẽ không hiện trong menu quản trị, nhưng vẫn được giữ trong database; kích hoạt lại child theme để truy cập.
 

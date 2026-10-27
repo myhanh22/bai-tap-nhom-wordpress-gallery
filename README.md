@@ -17,6 +17,6 @@ Có thể cài thủ công bằng cách copy `astra-child` vào `wp-content/them
 
 ## Tình trạng
 
-Có giao diện responsive, chủ đề/album, tác giả WordPress, tìm kiếm không dấu, lightbox và lazy loading. Có menu **Tác phẩm** để quản lý ảnh thật; dùng ảnh mẫu khi chưa có tác phẩm đã đăng kèm ảnh đại diện.
+Có giao diện responsive, chủ đề/album, tác giả WordPress, tìm kiếm không dấu, lightbox và lazy loading. CPT **Tác phẩm** lưu bài ảnh trong database WordPress. Trang **Đăng tác phẩm** dùng đăng nhập WordPress, nhận JPG/PNG/WebP và tạo bài chờ duyệt.
 
-Chưa bao gồm watermark tự động, tự chuyển WebP, hardening hoặc báo cáo bảo mật. Chưa có database của website nhóm đang làm trên LocalWP. Không commit mật khẩu, cấu hình kết nối hay database chứa thông tin nhạy cảm lên GitHub công khai. Nhóm cần xác minh quyền sử dụng ảnh và lập bảng license cho các theme/plugin cài thực tế.
+Watermark tự động và WebP được xử lý bằng plugin; xem [bảng kiểm kê theme/plugin/license](PLUGIN-LICENSES.md). Còn phải hoàn thiện cấu hình hardening, quét lỗ hổng và hồ sơ báo cáo. Database dùng các bảng WordPress mặc định; không cần SQL schema riêng. Không commit mật khẩu, cấu hình kết nối hay database chứa thông tin nhạy cảm lên GitHub công khai.
