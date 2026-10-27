@@ -46,3 +46,20 @@ wp-config.php
 # Note: If you wish to whitelist themes,
 # uncomment the next line
 #/wp-content/themes
+# Security evidence: private captures, credentials, database backups stay outside Git.
+.security-private/
+docs/security/private/
+
+# LaTeX build cache; retain final deliverables and public QA only.
+docs/report/output/*.aux
+docs/report/output/*.bbl
+docs/report/output/*.blg
+docs/report/output/*.log
+docs/report/output/*.out
+docs/report/output/*.toc
+docs/report/output/*.lof
+docs/report/output/*.lot
+docs/report/output/*.xdv
+docs/report/output/main.pdf
+__pycache__/
+*.pyc
