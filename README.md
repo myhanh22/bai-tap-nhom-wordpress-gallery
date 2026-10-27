@@ -17,6 +17,12 @@ Có thể cài thủ công bằng cách copy `astra-child` vào `wp-content/them
 
 ## Tình trạng
 
-Có giao diện responsive, chủ đề/album, tác giả WordPress, tìm kiếm không dấu, lightbox và lazy loading. CPT **Tác phẩm** lưu bài ảnh trong database WordPress. Trang **Đăng tác phẩm** dùng đăng nhập WordPress, nhận JPG/PNG/WebP và tạo bài chờ duyệt.
+Có giao diện responsive, chủ đề/album, tác giả WordPress, tìm kiếm không dấu, lightbox và lazy loading. CPT **Tác phẩm** lưu bài ảnh trong database WordPress. Trang **Đăng tác phẩm** dùng đăng nhập WordPress, nhận JPG/PNG/WebP và tạo bài chờ duyệt. Author không được tự xuất bản tác phẩm qua REST hoặc wp-admin; Admin/Editor duyệt bài. Bản 2.3.0 tự cập nhật quyền và tạo trang gửi ảnh còn thiếu trên theme đang hoạt động.
+
+Trang chủ luôn giữ đủ 30 ảnh mẫu ghi “Bộ sưu tập mẫu”, đặt sau ảnh thật đã duyệt có ảnh đại diện. Không nhập ảnh mẫu vào database. Liên kết **Đăng tác phẩm** có trên menu trang chủ và điện thoại.
+
+WebP trên Nginx cần cấu hình riêng: không bật `themes` khi dùng Pass Thru của bản plugin đã kiểm tra. Xem hướng dẫn bên dưới trước khi bật lại plugin; tắt plugin chỉ là cách khôi phục ảnh tạm thời.
+
+Kiểm thử trên WordPress riêng: xem [tests/README.md](tests/README.md).
 
 Watermark tự động và WebP được xử lý bằng plugin; xem [bảng kiểm kê theme/plugin/license](PLUGIN-LICENSES.md). Còn phải hoàn thiện cấu hình hardening, quét lỗ hổng và hồ sơ báo cáo. Database dùng các bảng WordPress mặc định; không cần SQL schema riêng. Không commit mật khẩu, cấu hình kết nối hay database chứa thông tin nhạy cảm lên GitHub công khai.

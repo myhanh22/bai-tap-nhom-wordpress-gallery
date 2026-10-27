@@ -31,13 +31,16 @@ add_action( 'init', function () {
     ) );
 } );
 
-/** Read actual published works first. Demo files are used only when none exist. */
+/** Published works with valid images first, followed by the 30 bundled demos. */
 function lk_gallery_items() {
     $items = array();
     $photos = get_posts( array( 'post_type' => 'lk_photo', 'post_status' => 'publish', 'posts_per_page' => -1 ) );
     foreach ( $photos as $photo ) {
         $id = get_post_thumbnail_id( $photo->ID );
         if ( ! $id ) { continue; }
+        $src = wp_get_attachment_image_url( $id, 'lk-gallery' );
+        $full = wp_get_attachment_image_url( $id, 'full' );
+        if ( ! $src || ! $full ) { continue; }
         $terms = get_the_terms( $photo->ID, 'lk_topic' );
         $topics = array();
         if ( $terms && ! is_wp_error( $terms ) ) {
@@ -46,13 +49,12 @@ function lk_gallery_items() {
         if ( ! $topics ) { $topics = array( 'tu-do' => 'Tự do' ); }
         $items[] = array(
             'title' => get_the_title( $photo ), 'author' => get_the_author_meta( 'display_name', $photo->post_author ),
-            'topics' => $topics, 'src' => wp_get_attachment_image_url( $id, 'lk-gallery' ),
-            'full' => wp_get_attachment_image_url( $id, 'full' ),
+            'topics' => $topics, 'src' => $src,
+            'full' => $full,
             'srcset' => wp_get_attachment_image_srcset( $id, 'lk-gallery' ),
             'alt' => get_post_meta( $id, '_wp_attachment_image_alt', true ) ?: get_the_title( $photo ),
         );
     }
-    if ( $items ) { return $items; }
     $demo = array(
         array('phong-canh-que-15','Lối về bình yên','doi-song','Đời sống'),
         array('co-gai-che-o-08','Một thoáng dịu dàng','chan-dung','Chân dung'),
@@ -97,7 +99,7 @@ require_once get_stylesheet_directory() . '/inc/upload-form.php';
 /** Versioned setup also runs when files are updated on an already active theme. */
 add_action( 'init', 'lk_upgrade_theme', 20 );
 function lk_upgrade_theme() {
-    if ( '2.2.0' === get_option( 'lk_setup_version' ) ) {
+    if ( '2.3.0' === get_option( 'lk_setup_version' ) ) {
         return;
     }
     $submit_caps = array( 'edit_lk_photos', 'delete_lk_photos' );
@@ -109,12 +111,17 @@ function lk_upgrade_theme() {
     foreach ( array( 'administrator', 'editor', 'author' ) as $role_name ) {
         $role = get_role( $role_name );
         if ( ! $role ) { continue; }
+        if ( 'author' === $role_name ) {
+            foreach ( array_diff( $review_caps, $submit_caps ) as $cap ) {
+                $role->remove_cap( $cap );
+            }
+        }
         foreach ( 'author' === $role_name ? $submit_caps : $review_caps as $cap ) {
             $role->add_cap( $cap );
         }
     }
     if ( lk_create_upload_page() ) {
         flush_rewrite_rules( false );
-        update_option( 'lk_setup_version', '2.2.0' );
+        update_option( 'lk_setup_version', '2.3.0' );
     }
 }

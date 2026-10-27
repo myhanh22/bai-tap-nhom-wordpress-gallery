@@ -7,7 +7,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_shortcode( 'lk_upload_form', 'lk_upload_form_shortcode' );
 add_action( 'after_switch_theme', 'lk_create_upload_page' );
 
-/** Create the upload page on theme activation without duplicating existing pages. */
+/** Resolve the real permalink, including plain-permalink installations. */
+function lk_upload_page_url() {
+    $page = get_page_by_path( 'dang-tac-pham' );
+    return $page ? get_permalink( $page ) : home_url( '/dang-tac-pham/' );
+}
+
+/** Create a missing page without altering an existing user's page. */
 function lk_create_upload_page() {
     if ( get_page_by_path( 'dang-tac-pham' ) ) {
         return true;
@@ -29,10 +35,15 @@ function lk_create_upload_page() {
 /** Process submissions before the template sends headers. */
 add_action( 'template_redirect', 'lk_handle_upload' );
 function lk_handle_upload() {
+    $page = get_queried_object();
+    if ( ! is_singular() || ! ( $page instanceof WP_Post ) || ! has_shortcode( $page->post_content, 'lk_upload_form' ) ) {
+        return;
+    }
+    nocache_headers();
     if ( ! is_user_logged_in() || ! current_user_can( 'upload_files' ) || ! current_user_can( 'edit_lk_photos' ) ) {
         return;
     }
-    $page_url = remove_query_arg( 'lk_upload', get_permalink() ?: home_url( '/dang-tac-pham/' ) );
+    $page_url = get_permalink() ?: lk_upload_page_url();
     $notice = '';
     $method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '';
 
@@ -46,7 +57,7 @@ function lk_handle_upload() {
             $topic_id = isset( $_POST['lk_topic'] ) ? absint( wp_unslash( $_POST['lk_topic'] ) ) : 0;
             $file = isset( $_FILES['lk_photo_file'] ) && is_array( $_FILES['lk_photo_file'] ) ? $_FILES['lk_photo_file'] : null;
             $file_error = $file && isset( $file['error'] ) ? (int) $file['error'] : UPLOAD_ERR_NO_FILE;
-            $file_size = $file && isset( $file['size'] ) ? (int) $file['size'] : 0;
+            $file_size = $file && isset( $file['tmp_name'] ) && is_string( $file['tmp_name'] ) && is_uploaded_file( $file['tmp_name'] ) ? filesize( $file['tmp_name'] ) : 0;
             $max_size = 12 * MB_IN_BYTES;
 
             if ( '' === $title ) {
@@ -55,6 +66,8 @@ function lk_handle_upload() {
                 $notice = 'Hãy chọn một tệp ảnh.';
             } elseif ( UPLOAD_ERR_OK !== $file_error ) {
                 $notice = 'Không tải được tệp. Hãy thử lại hoặc chọn ảnh nhỏ hơn.';
+            } elseif ( ! $file_size || ! isset( $file['name'] ) || ! is_string( $file['name'] ) ) {
+                $notice = 'Tệp tải lên không hợp lệ.';
             } elseif ( $file_size > $max_size || $file_size > wp_max_upload_size() ) {
                 $notice = 'Ảnh vượt quá giới hạn tải lên. Giới hạn của biểu mẫu là 12 MB.';
             } else {
@@ -65,7 +78,7 @@ function lk_handle_upload() {
                 );
                 $checked_file = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'], $allowed_mimes );
 
-                if ( empty( $checked_file['type'] ) || ! in_array( $checked_file['type'], $allowed_mimes, true ) ) {
+                if ( empty( $checked_file['type'] ) || ! in_array( $checked_file['type'], $allowed_mimes, true ) || wp_get_image_mime( $file['tmp_name'] ) !== $checked_file['type'] ) {
                     $notice = 'Chỉ chấp nhận ảnh JPG, PNG hoặc WebP.';
                 } else {
                     require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -96,11 +109,16 @@ function lk_handle_upload() {
                             true
                         );
 
-                        if ( is_wp_error( $photo_id ) ) {
+                        if ( is_wp_error( $photo_id ) || ! $photo_id ) {
                             wp_delete_attachment( $attachment_id, true );
                             $notice = 'Không lưu được tác phẩm. Hãy thử lại.';
                         } else {
-                            set_post_thumbnail( $photo_id, $attachment_id );
+                            if ( ! set_post_thumbnail( $photo_id, $attachment_id ) ) {
+                                wp_delete_post( $photo_id, true );
+                                wp_delete_attachment( $attachment_id, true );
+                                $GLOBALS['lk_upload_error'] = 'Không gắn được ảnh vào tác phẩm. Hãy thử ảnh khác.';
+                                return;
+                            }
                             update_post_meta( $attachment_id, '_wp_attachment_image_alt', $title );
                             wp_update_post(
                                 array(
@@ -117,7 +135,11 @@ function lk_handle_upload() {
                             }
 
                             $redirect_url = $page_url ? $page_url : home_url( '/dang-tac-pham/' );
-                            wp_safe_redirect( add_query_arg( 'lk_upload', 'pending', $redirect_url ), 303 );
+                            wp_safe_redirect( add_query_arg( array(
+                                'lk_upload' => 'pending',
+                                'lk_upload_id' => $photo_id,
+                                'lk_receipt' => wp_create_nonce( 'lk_upload_success_' . $photo_id ),
+                            ), $redirect_url ), 303 );
                             exit;
                         }
                     }
@@ -131,7 +153,7 @@ function lk_handle_upload() {
 
 /** Render the login-protected submission form. */
 function lk_upload_form_shortcode() {
-    $page_url = remove_query_arg( 'lk_upload', get_permalink() ?: home_url( '/dang-tac-pham/' ) );
+    $page_url = get_permalink() ?: lk_upload_page_url();
     if ( ! is_user_logged_in() ) {
         return '<section class="lk-upload"><p>Đăng nhập bằng tài khoản tác giả để gửi tác phẩm.</p><p><a href="' . esc_url( wp_login_url( $page_url ) ) . '">Đăng nhập</a></p></section>';
     }
@@ -140,7 +162,15 @@ function lk_upload_form_shortcode() {
     }
     $notice = isset( $GLOBALS['lk_upload_error'] ) ? $GLOBALS['lk_upload_error'] : '';
     $notice_class = 'error';
-    if ( 'GET' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) && isset( $_GET['lk_upload'] ) && 'pending' === sanitize_key( wp_unslash( $_GET['lk_upload'] ) ) ) {
+    $photo_id = isset( $_GET['lk_upload_id'] ) ? absint( $_GET['lk_upload_id'] ) : 0;
+    $receipt = isset( $_GET['lk_receipt'] ) ? sanitize_text_field( wp_unslash( $_GET['lk_receipt'] ) ) : '';
+    $photo = $photo_id ? get_post( $photo_id ) : null;
+    if ( 'GET' === ( $_SERVER['REQUEST_METHOD'] ?? '' ) &&
+        isset( $_GET['lk_upload'] ) && 'pending' === $_GET['lk_upload'] &&
+        wp_verify_nonce( $receipt, 'lk_upload_success_' . $photo_id ) &&
+        $photo && 'lk_photo' === $photo->post_type &&
+        (int) $photo->post_author === get_current_user_id() &&
+        'pending' === $photo->post_status && get_post_thumbnail_id( $photo_id ) ) {
         $notice = 'Tác phẩm đã được gửi và đang chờ quản trị viên duyệt.';
         $notice_class = 'success';
     }
