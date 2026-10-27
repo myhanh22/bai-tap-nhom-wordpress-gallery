@@ -32,6 +32,29 @@ function lk_create_upload_page() {
     return ! is_wp_error( $page_id ) && $page_id > 0;
 }
 
+/** Resolve a validated choice; create a new term only after the photo is saved. */
+function lk_submission_topic( $choice, $new_name, $create = false ) {
+    if ( 'other' === $choice ) {
+        if ( '' === $new_name || mb_strlen( $new_name ) > 80 ) {
+            return new WP_Error( 'topic_name', 'Hãy nhập tên chủ đề mới, tối đa 80 ký tự.' );
+        }
+        $existing = term_exists( $new_name, 'lk_topic' );
+        if ( $existing ) { return (int) ( is_array( $existing ) ? $existing['term_id'] : $existing ); }
+        if ( ! $create ) { return 0; }
+        $term = wp_insert_term( $new_name, 'lk_topic' );
+        if ( is_wp_error( $term ) ) {
+            return 'term_exists' === $term->get_error_code() ? (int) $term->get_error_data() : $term;
+        }
+        return (int) $term['term_id'];
+    }
+    if ( '' === $choice || '0' === $choice ) {
+        $term = get_term_by( 'slug', 'tu-do', 'lk_topic' ) ?: get_term_by( 'name', 'Tự do', 'lk_topic' );
+    } else {
+        $term = ctype_digit( $choice ) ? get_term( (int) $choice, 'lk_topic' ) : null;
+    }
+    return $term && ! is_wp_error( $term ) ? (int) $term->term_id : new WP_Error( 'topic_invalid', 'Chủ đề không hợp lệ. Hãy chọn lại chủ đề trong danh sách.' );
+}
+
 /** Process submissions before the template sends headers. */
 add_action( 'template_redirect', 'lk_handle_upload' );
 function lk_handle_upload() {
@@ -54,7 +77,9 @@ function lk_handle_upload() {
         } else {
             $title = isset( $_POST['lk_photo_title'] ) ? sanitize_text_field( wp_unslash( $_POST['lk_photo_title'] ) ) : '';
             $description = isset( $_POST['lk_photo_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['lk_photo_description'] ) ) : '';
-            $topic_id = isset( $_POST['lk_topic'] ) ? absint( wp_unslash( $_POST['lk_topic'] ) ) : 0;
+            $topic_choice = isset( $_POST['lk_topic'] ) ? sanitize_text_field( wp_unslash( $_POST['lk_topic'] ) ) : '0';
+            $new_topic = isset( $_POST['lk_new_topic'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['lk_new_topic'] ) ) ) : '';
+            $topic_id = lk_submission_topic( $topic_choice, $new_topic );
             $file = isset( $_FILES['lk_photo_file'] ) && is_array( $_FILES['lk_photo_file'] ) ? $_FILES['lk_photo_file'] : null;
             $file_error = $file && isset( $file['error'] ) ? (int) $file['error'] : UPLOAD_ERR_NO_FILE;
             $file_size = $file && isset( $file['tmp_name'] ) && is_string( $file['tmp_name'] ) && is_uploaded_file( $file['tmp_name'] ) ? filesize( $file['tmp_name'] ) : 0;
@@ -62,6 +87,8 @@ function lk_handle_upload() {
 
             if ( '' === $title ) {
                 $notice = 'Hãy nhập tên tác phẩm.';
+            } elseif ( is_wp_error( $topic_id ) ) {
+                $notice = $topic_id->get_error_message();
             } elseif ( ! $file || UPLOAD_ERR_NO_FILE === $file_error ) {
                 $notice = 'Hãy chọn một tệp ảnh.';
             } elseif ( UPLOAD_ERR_OK !== $file_error ) {
@@ -127,11 +154,13 @@ function lk_handle_upload() {
                                 )
                             );
 
-                            if ( $topic_id ) {
-                                $topic = get_term( $topic_id, 'lk_topic' );
-                                if ( $topic && ! is_wp_error( $topic ) ) {
-                                    wp_set_object_terms( $photo_id, array( $topic_id ), 'lk_topic' );
-                                }
+                            $topic_id = lk_submission_topic( $topic_choice, $new_topic, true );
+                            $assigned = is_wp_error( $topic_id ) ? $topic_id : wp_set_object_terms( $photo_id, array( $topic_id ), 'lk_topic' );
+                            if ( is_wp_error( $assigned ) ) {
+                                wp_delete_post( $photo_id, true );
+                                wp_delete_attachment( $attachment_id, true );
+                                $GLOBALS['lk_upload_error'] = 'Không lưu được chủ đề. Hãy thử lại.';
+                                return;
                             }
 
                             $redirect_url = $page_url ? $page_url : home_url( '/dang-tac-pham/' );
@@ -182,6 +211,8 @@ function lk_upload_form_shortcode() {
         )
     );
 
+    $selected_topic = isset( $_POST['lk_topic'] ) ? sanitize_text_field( wp_unslash( $_POST['lk_topic'] ) ) : '0';
+    $new_topic = isset( $_POST['lk_new_topic'] ) ? sanitize_text_field( wp_unslash( $_POST['lk_new_topic'] ) ) : '';
     ob_start();
     ?>
     <section class="lk-upload" aria-labelledby="lk-upload-title">
@@ -193,23 +224,27 @@ function lk_upload_form_shortcode() {
             <?php echo wp_nonce_field( 'lk_upload_photo', 'lk_upload_nonce', true, false ); ?>
             <p>
                 <label for="lk-photo-title">Tên tác phẩm</label>
-                <input id="lk-photo-title" name="lk_photo_title" type="text" maxlength="200" required>
+                <input id="lk-photo-title" name="lk_photo_title" type="text" maxlength="200" value="<?php echo esc_attr( isset( $_POST['lk_photo_title'] ) ? sanitize_text_field( wp_unslash( $_POST['lk_photo_title'] ) ) : '' ); ?>" required>
             </p>
             <p>
                 <label for="lk-photo-description">Mô tả</label>
-                <textarea id="lk-photo-description" name="lk_photo_description" rows="4"></textarea>
+                <textarea id="lk-photo-description" name="lk_photo_description" rows="4"><?php echo esc_textarea( isset( $_POST['lk_photo_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['lk_photo_description'] ) ) : '' ); ?></textarea>
             </p>
-            <?php if ( ! is_wp_error( $topics ) && $topics ) : ?>
-                <p>
-                    <label for="lk-photo-topic">Chủ đề / album</label>
-                    <select id="lk-photo-topic" name="lk_topic">
-                        <option value="0">Chọn chủ đề</option>
-                        <?php foreach ( $topics as $topic ) : ?>
-                            <option value="<?php echo esc_attr( $topic->term_id ); ?>"><?php echo esc_html( $topic->name ); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </p>
-            <?php endif; ?>
+            <p>
+                <label for="lk-photo-topic">Chủ đề / album</label>
+                <select id="lk-photo-topic" name="lk_topic" aria-controls="lk-new-topic-field">
+                    <option value="0" <?php selected( $selected_topic, '0' ); ?>>Tự do (không chọn chủ đề)</option>
+                    <?php if ( ! is_wp_error( $topics ) ) : foreach ( $topics as $topic ) : ?>
+                        <?php if ( 'tu-do' === $topic->slug || 'Tự do' === $topic->name ) { continue; } ?>
+                        <option value="<?php echo esc_attr( $topic->term_id ); ?>" <?php selected( $selected_topic, (string) $topic->term_id ); ?>><?php echo esc_html( $topic->name ); ?></option>
+                    <?php endforeach; endif; ?>
+                    <option value="other" <?php selected( $selected_topic, 'other' ); ?>>Khác — tạo chủ đề mới</option>
+                </select>
+            </p>
+            <p id="lk-new-topic-field">
+                <label for="lk-new-topic">Tên chủ đề mới (khi chọn Khác)</label>
+                <input id="lk-new-topic" name="lk_new_topic" type="text" maxlength="80" value="<?php echo esc_attr( $new_topic ); ?>" autocomplete="off">
+            </p>
             <p>
                 <label for="lk-photo-file">Ảnh (JPG, PNG hoặc WebP; tối đa 12 MB)</label>
                 <input id="lk-photo-file" name="lk_photo_file" type="file" accept="image/jpeg,image/png,image/webp" required>

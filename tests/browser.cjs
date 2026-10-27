@@ -7,14 +7,16 @@ if (process.env.LK_DISPOSABLE_WP !== '1' || !base || !process.env.LK_TEST_PASSWO
 (async () => {
   const browser = await chromium.launch({executablePath: process.env.LK_BROWSER || '/usr/bin/microsoft-edge', headless:true, args:['--no-sandbox']});
   const context = await browser.newContext();
+  await context.route('**/*', route => new URL(route.request().url()).origin === new URL(base).origin ? route.continue() : route.abort());
   const page = await context.newPage();
+  page.setDefaultNavigationTimeout(60000);
   const check = (v, message) => { assert.ok(v, message); console.log('PASS: '+message); };
   async function login(role) {
     await context.clearCookies();
     await page.goto(base+'/wp-login.php');
     await page.locator('#user_login').fill('lk_fixture_'+role);
     await page.locator('#user_pass').fill(process.env.LK_TEST_PASSWORD);
-    await Promise.all([page.waitForURL(u => !u.pathname.endsWith('wp-login.php')), page.locator('#wp-submit').click()]);
+    await Promise.all([page.waitForURL(u => !u.pathname.endsWith('wp-login.php'), {waitUntil:'domcontentloaded',timeout:60000}), page.locator('#wp-submit').click()]);
   }
   await page.goto(base+'/dang-tac-pham/');
   check(await page.getByRole('link',{name:'Đăng nhập',exact:true}).count(), 'Guest sees login link');

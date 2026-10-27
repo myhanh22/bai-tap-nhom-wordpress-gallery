@@ -31,31 +31,9 @@ add_action( 'init', function () {
     ) );
 } );
 
-/** Published works with valid images first, followed by the 30 bundled demos. */
-function lk_gallery_items() {
-    $items = array();
-    $photos = get_posts( array( 'post_type' => 'lk_photo', 'post_status' => 'publish', 'posts_per_page' => -1 ) );
-    foreach ( $photos as $photo ) {
-        $id = get_post_thumbnail_id( $photo->ID );
-        if ( ! $id ) { continue; }
-        $src = wp_get_attachment_image_url( $id, 'lk-gallery' );
-        $full = wp_get_attachment_image_url( $id, 'full' );
-        if ( ! $src || ! $full ) { continue; }
-        $terms = get_the_terms( $photo->ID, 'lk_topic' );
-        $topics = array();
-        if ( $terms && ! is_wp_error( $terms ) ) {
-            foreach ( $terms as $term ) { $topics[ $term->slug ] = $term->name; }
-        }
-        if ( ! $topics ) { $topics = array( 'tu-do' => 'Tự do' ); }
-        $items[] = array(
-            'title' => get_the_title( $photo ), 'author' => get_the_author_meta( 'display_name', $photo->post_author ),
-            'topics' => $topics, 'src' => $src,
-            'full' => $full,
-            'srcset' => wp_get_attachment_image_srcset( $id, 'lk-gallery' ),
-            'alt' => get_post_meta( $id, '_wp_attachment_image_alt', true ) ?: get_the_title( $photo ),
-        );
-    }
-    $demo = array(
+/** One catalog for bundled photos and the submission topic choices. */
+function lk_demo_photos() {
+    return array(
         array('phong-canh-que-15','Lối về bình yên','doi-song','Đời sống'),
         array('co-gai-che-o-08','Một thoáng dịu dàng','chan-dung','Chân dung'),
         array('hoang-hon-12','Chạm vào hoàng hôn','phong-canh','Phong cảnh'),
@@ -87,19 +65,49 @@ function lk_gallery_items() {
         array('cho-da-lat-29','Hẹn ở Đà Lạt','doi-song','Đời sống'),
         array('ban-hoa-30','Chở mùa qua phố','doi-song','Đời sống'),
     );
-    foreach ( $demo as $row ) {
-        $url = get_stylesheet_directory_uri() . '/assets/demo/' . $row[0] . '.jpg';
-        $items[] = array( 'title' => $row[1], 'author' => 'Bộ sưu tập mẫu', 'topics' => array( $row[2] => $row[3] ), 'src' => $url, 'full' => $url, 'srcset' => '', 'alt' => $row[1] );
+}
+
+/** Published works with valid images first, followed by the 30 bundled demos. */
+function lk_gallery_items() {
+    $items = array();
+    $photos = get_posts( array( 'post_type' => 'lk_photo', 'post_status' => 'publish', 'posts_per_page' => -1 ) );
+    foreach ( $photos as $photo ) {
+        $id = get_post_thumbnail_id( $photo->ID );
+        if ( ! $id ) { continue; }
+        $src = wp_get_attachment_image_url( $id, 'lk-gallery' );
+        $full = wp_get_attachment_image_url( $id, 'full' );
+        if ( ! $src || ! $full ) { continue; }
+        $terms = get_the_terms( $photo->ID, 'lk_topic' );
+        $topics = array();
+        if ( $terms && ! is_wp_error( $terms ) ) {
+            foreach ( $terms as $term ) { $topics[ $term->slug ] = $term->name; }
+        }
+        if ( ! $topics ) { $topics = array( 'tu-do' => 'Tự do' ); }
+        $items[] = array(
+            'title' => get_the_title( $photo ), 'author' => get_the_author_meta( 'display_name', $photo->post_author ),
+            'topics' => $topics, 'src' => $src,
+            'full' => $full,
+            'srcset' => wp_get_attachment_image_srcset( $id, 'lk-gallery' ),
+            'alt' => get_post_meta( $id, '_wp_attachment_image_alt', true ) ?: get_the_title( $photo ),
+        );
+    }
+    foreach ( lk_demo_photos() as $row ) {
+        $term = get_term_by( 'slug', $row[2], 'lk_topic' ) ?: get_term_by( 'name', $row[3], 'lk_topic' );
+        $topic_slug = $term ? $term->slug : $row[2];
+        $topic_name = $term ? $term->name : $row[3];
+        $url = get_stylesheet_directory_uri() . '/assets/demo-watermarked/' . $row[0] . '.jpg';
+        $items[] = array( 'title' => $row[1], 'author' => 'Bộ sưu tập mẫu', 'topics' => array( $topic_slug => $topic_name ), 'src' => $url, 'full' => $url, 'srcset' => '', 'alt' => $row[1] );
     }
     return $items;
 }
 
 require_once get_stylesheet_directory() . '/inc/upload-form.php';
+require_once get_stylesheet_directory() . '/inc/hero.php';
 
 /** Versioned setup also runs when files are updated on an already active theme. */
 add_action( 'init', 'lk_upgrade_theme', 20 );
 function lk_upgrade_theme() {
-    if ( '2.3.0' === get_option( 'lk_setup_version' ) ) {
+    if ( '2.4.0' === get_option( 'lk_setup_version' ) ) {
         return;
     }
     $submit_caps = array( 'edit_lk_photos', 'delete_lk_photos' );
@@ -120,8 +128,22 @@ function lk_upgrade_theme() {
             $role->add_cap( $cap );
         }
     }
-    if ( lk_create_upload_page() ) {
+    if ( lk_seed_gallery_topics() && lk_create_upload_page() ) {
         flush_rewrite_rules( false );
-        update_option( 'lk_setup_version', '2.3.0' );
+        update_option( 'lk_setup_version', '2.4.0' );
     }
+}
+
+/** Add the existing demo topics once, preserving names and terms already on site. */
+function lk_seed_gallery_topics() {
+    $topics = array( 'tu-do' => 'Tự do' );
+    foreach ( lk_demo_photos() as $row ) {
+        $topics[ $row[2] ] = $row[3];
+    }
+    foreach ( $topics as $slug => $name ) {
+        if ( get_term_by( 'slug', $slug, 'lk_topic' ) || get_term_by( 'name', $name, 'lk_topic' ) ) { continue; }
+        $result = wp_insert_term( $name, 'lk_topic', array( 'slug' => $slug ) );
+        if ( is_wp_error( $result ) && 'term_exists' !== $result->get_error_code() ) { return false; }
+    }
+    return true;
 }

@@ -8,6 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTop();
         topButton.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reducedMotion ? 'instant' : 'smooth' }));
     }
+    const topicSelect = document.getElementById('lk-photo-topic');
+    const newTopicField = document.getElementById('lk-new-topic-field');
+    const newTopicInput = document.getElementById('lk-new-topic');
+    if (topicSelect && newTopicField && newTopicInput) {
+        const updateTopicField = () => {
+            const custom = topicSelect.value === 'other';
+            newTopicField.hidden = !custom;
+            newTopicInput.required = custom;
+            newTopicInput.disabled = !custom;
+        };
+        topicSelect.addEventListener('change', () => {
+            updateTopicField();
+            if (!newTopicField.hidden) newTopicInput.focus();
+        });
+        updateTopicField();
+    }
     const grid = document.getElementById('lk-grid');
     if (!grid) return;
     const cards = [...grid.querySelectorAll('.lk-card')];
@@ -27,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 (!author.value || card.dataset.author === author.value) &&
                 normalize(card.dataset.title + ' ' + card.dataset.author).includes(query);
             card.hidden = !matches;
+            card.classList.toggle('lk-card-tall', matches && visible % 3 === 1);
             if (matches) visible++;
         });
         count.textContent = String(visible);
@@ -47,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-album]').forEach(link => link.addEventListener('click', () => {
         topic = link.dataset.album; search.value = ''; author.value = ''; applyFilters();
     }));
+    applyFilters();
     const dialog = document.querySelector('.lk-lightbox');
     const image = document.getElementById('lk-lightbox-img');
     const error = document.getElementById('lk-image-error');
@@ -57,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = visibleCards[selected];
         error.hidden = true;
         image.alt = card.querySelector('img').alt;
+        image.hidden = true;
         image.src = card.querySelector('[data-full]').dataset.full;
         document.getElementById('lk-lightbox-title').textContent = card.dataset.title;
         document.getElementById('lk-lightbox-author').textContent = card.dataset.author;
@@ -64,7 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('lk-prev').disabled = visibleCards.length < 2;
         document.getElementById('lk-next').disabled = visibleCards.length < 2;
     }
-    image.addEventListener('error', () => { error.hidden = false; });
+    image.addEventListener('load', () => { image.hidden = false; error.hidden = true; });
+    image.addEventListener('error', () => { if (dialog.open) { image.hidden = true; error.hidden = false; } });
     function navigate(step) { selected = (selected + step + visibleCards.length) % visibleCards.length; renderImage(); }
     cards.forEach(card => card.querySelector('.lk-photo').addEventListener('click', event => {
         opener = event.currentTarget;
@@ -85,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     dialog.addEventListener('close', () => {
         document.body.classList.remove('lk-dialog-open');
+        image.hidden = true;
         image.removeAttribute('src');
         if (opener) opener.focus();
     });

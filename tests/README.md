@@ -20,6 +20,8 @@ Chạy trên **database mới** theo thứ tự:
 ```sh
 php tests/wordpress-integration.php
 node tests/browser.cjs
+node tests/gallery-enhancements.cjs
+php tests/hero.php
 ```
 
 PHP test tạo fixture theo vai trò, kiểm tra quyền WordPress/REST và nâng cấp theme đang hoạt động. Browser test dùng Playwright kiểm tra upload qua HTTP, wp-admin, duyệt bài, dữ liệu kết hợp và giao diện. Các fixture được để lại trong môi trường riêng để xem kết quả; muốn chạy lại đầy đủ thì tạo database kiểm thử mới. Không dùng lại database đã có tác phẩm vì test đếm chính xác 30/31 ảnh. Cài Playwright vào thư mục ngoài repo nếu chỉ chạy kiểm tra tạm thời; Node 18 dùng Playwright 1.51.1 đã được kiểm tra với Edge có sẵn.
@@ -57,3 +59,17 @@ Tái hiện trên bản WordPress riêng, cùng plugin và thiết lập:
 WebP được tạo bằng hook chuyển attachment của chính plugin, loader được tạo lại bằng hook `webpc_refresh_loader`, không sửa vendor/loader bằng tay. Khi output directory chưa có lúc loader được sinh, allowed prefixes có thể rỗng; sau bulk conversion cần lưu lại cấu hình/refresh loader. Sau khi có WebP, theme URL vẫn bị loader từ chối, xác nhận hạn chế phạm vi Pass Thru độc lập với lỗi chưa có file WebP.
 
 Cấu hình Pass Thru chỉ cho uploads đã kiểm chứng trên môi trường riêng. **Chưa hoàn thành WebP toàn site LocalWP thật**, chưa áp dụng cấu hình Nginx, chưa kiểm chứng bulk toàn bộ ảnh thật hoặc cache/content negotiation qua Nginx. Muốn chuyển cả ảnh mẫu trong theme, làm theo hướng dẫn nhà phát triển cho Nginx và kiểm tra `Accept`, `Vary`, fallback, srcset, lightbox trước khi công bố. Không thay hàng loạt `.jpg` thành `.webp`.
+
+## Bổ sung bản 2.4.0
+
+`gallery-enhancements.cjs` chạy sau `browser.cjs`, trên cùng WordPress riêng: kiểm tra dropdown có các chủ đề đang hiển thị trên web; upload mặc định Tự do, chọn chủ đề có sẵn, tạo chủ đề mới qua Khác, dùng lại tên không trùng; từ chối ID giả và tên rỗng. Kiểm tra quan hệ taxonomy thực đã lưu qua REST.
+
+Kiểm tra giao diện ở 1440, 1024, 768, 390, 320px: không tràn ngang; viền focus nằm trên khung tìm kiếm; lọc vẫn giữ nhịp ảnh cao/thấp; lightbox dùng ảnh watermark, không còn viền vuông ở các nút, chuyển ảnh bằng nút/phím, đóng trả focus về ảnh; không có lỗi JavaScript.
+
+Manifest watermark được so với hash thực của đủ 30 bản gốc và 30 bản đã đóng; kích thước giữ nguyên, hash đầu ra khác đầu vào. Kiểm tra trực quan chữ có dấu bằng Open Sans. Không đổi cơ chế chọn banner trong bản này.
+
+Sau triển khai 2.4.0 lên LocalWP: trang chủ và `/dang-tac-pham/` HTTP 200; đủ 30 thẻ mẫu trỏ tới `demo-watermarked`, toàn bộ ảnh tải được. Marker nâng cấp là 2.4.0; các chủ đề mặc định đã bổ sung và chủ đề người dùng giữ nguyên. Đổi riêng font Image Watermark sang Open Sans, không đổi plugin vendor hoặc bật Converter for Media. Hash metadata ảnh đại diện trước/sau triển khai trùng nhau. Kiểm tra trình duyệt site thật cho tìm kiếm, lightbox, màn hình 390/320px và lỗi JavaScript đã qua.
+
+## Banner cố định 2.4.1
+
+`hero.php` chạy trên WordPress riêng sau khi có fixture ảnh: banner mặc định không đổi khi xuất bản tác phẩm mới; chọn ảnh và chú thích riêng hoạt động; ID không phải ảnh bị từ chối; ảnh đã xóa trở về ảnh mặc định. Đăng ký bộ điều khiển trong Customizer cùng Astra thành công, dùng Media Control và quyền `edit_theme_options`. Test khôi phục theme mods và dọn bài tự tạo sau khi chạy. Không sửa ảnh đại diện của bài có sẵn.
