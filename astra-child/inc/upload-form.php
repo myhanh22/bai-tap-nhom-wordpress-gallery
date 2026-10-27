@@ -55,6 +55,18 @@ function lk_submission_topic( $choice, $new_name, $create = false ) {
     return $term && ! is_wp_error( $term ) ? (int) $term->term_id : new WP_Error( 'topic_invalid', 'Chủ đề không hợp lệ. Hãy chọn lại chủ đề trong danh sách.' );
 }
 
+/** PHP ini quantities use binary K/M/G; zero and negative values mean no limit. */
+function lk_ini_size_bytes( $value ) {
+    $value = trim( (string) $value );
+    if ( ! preg_match( '/^(-?\d+)\s*([KMG]?)$/i', $value, $matches ) ) {
+        return null; // Unknown configuration must not be presented as a verified limit.
+    }
+    $bytes = (float) $matches[1];
+    $unit = strtoupper( $matches[2] );
+    $power = array( '' => 0, 'K' => 1, 'M' => 2, 'G' => 3 );
+    return $bytes > 0 ? $bytes * pow( 1024, $power[ $unit ] ) : 0;
+}
+
 /** Process submissions before the template sends headers. */
 add_action( 'template_redirect', 'lk_handle_upload' );
 function lk_handle_upload() {
@@ -69,6 +81,18 @@ function lk_handle_upload() {
     $page_url = get_permalink() ?: lk_upload_page_url();
     $notice = '';
     $method = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '';
+
+    // PHP discards BOTH POST and FILES before WordPress runs when this is exceeded.
+    $post_limit = lk_ini_size_bytes( ini_get( 'post_max_size' ) );
+    $content_length = isset( $_SERVER['CONTENT_LENGTH'] ) ? trim( (string) $_SERVER['CONTENT_LENGTH'] ) : '';
+    if ( 'POST' === $method && $post_limit > 0 && ctype_digit( $content_length ) && (float) $content_length > $post_limit ) {
+        status_header( 413 );
+        $GLOBALS['lk_upload_error'] = sprintf(
+            'Tổng dữ liệu gửi vượt giới hạn máy chủ (%s). PHP đã hủy dữ liệu biểu mẫu; hãy chọn ảnh nhỏ hơn và nhập lại nội dung. Giới hạn riêng của ảnh là 12 MB.',
+            size_format( $post_limit )
+        );
+        return;
+    }
 
     if ( 'POST' === $method && isset( $_POST['lk_upload_submit'] ) ) {
         $nonce = isset( $_POST['lk_upload_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['lk_upload_nonce'] ) ) : '';
@@ -91,12 +115,16 @@ function lk_handle_upload() {
                 $notice = $topic_id->get_error_message();
             } elseif ( ! $file || UPLOAD_ERR_NO_FILE === $file_error ) {
                 $notice = 'Hãy chọn một tệp ảnh.';
+            } elseif ( UPLOAD_ERR_INI_SIZE === $file_error ) {
+                $notice = 'Ảnh vượt giới hạn tệp của máy chủ (upload_max_filesize). Hãy chọn ảnh nhỏ hơn; giới hạn riêng của biểu mẫu là 12 MB.';
             } elseif ( UPLOAD_ERR_OK !== $file_error ) {
                 $notice = 'Không tải được tệp. Hãy thử lại hoặc chọn ảnh nhỏ hơn.';
             } elseif ( ! $file_size || ! isset( $file['name'] ) || ! is_string( $file['name'] ) ) {
                 $notice = 'Tệp tải lên không hợp lệ.';
-            } elseif ( $file_size > $max_size || $file_size > wp_max_upload_size() ) {
-                $notice = 'Ảnh vượt quá giới hạn tải lên. Giới hạn của biểu mẫu là 12 MB.';
+            } elseif ( $file_size > $max_size ) {
+                $notice = 'Ảnh vượt giới hạn 12 MB của biểu mẫu.';
+            } elseif ( lk_ini_size_bytes( ini_get( 'upload_max_filesize' ) ) > 0 && $file_size > lk_ini_size_bytes( ini_get( 'upload_max_filesize' ) ) ) {
+                $notice = 'Ảnh vượt giới hạn tệp của máy chủ (upload_max_filesize).';
             } else {
                 $allowed_mimes = array(
                     'jpg|jpeg' => 'image/jpeg',
