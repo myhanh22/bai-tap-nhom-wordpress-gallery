@@ -63,3 +63,5 @@ docs/report/output/*.xdv
 docs/report/output/main.pdf
 __pycache__/
 *.pyc
+
+report
