@@ -1,5 +1,7 @@
 # Kiểm thử WordPress riêng
 
+Ngoại lệ chỉ đọc: `typography.cjs` kiểm tra typography trên site hiện có, không tạo tài khoản/bài/media. Xem [hướng dẫn và giới hạn Windows](../docs/installation/VIETNAMESE-TYPOGRAPHY.md). Các test còn lại bên dưới cần môi trường dùng một lần.
+
 Các test tạo người dùng, bài, media và xóa trang gửi ảnh trong **database kiểm thử**. Không chạy trên site có dữ liệu thật, không trỏ `LK_WP_ROOT` vào LocalWP đang dùng. Chỉ cài fixture vào bản WordPress dùng một lần.
 
 Chuẩn bị WordPress mới với core WordPress, Astra và bản `astra-child` đang sửa. Tạo database riêng, cài WordPress, kích hoạt Astra Child, đặt permalink `/%postname%/`. Cấu hình URL HTTP riêng, tắt WP Cron; không sao chép tài khoản/database của site thật. Cung cấp thông tin DB trong `wp-config.php` của môi trường riêng, ngoài repo.
