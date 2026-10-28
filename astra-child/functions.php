@@ -105,7 +105,7 @@ require_once get_stylesheet_directory() . '/inc/upload-form.php';
 require_once get_stylesheet_directory() . '/inc/hero.php';
 
 /** Versioned setup also runs when files are updated on an already active theme. */
-add_action( 'init', 'lk_upgrade_theme', 20 );
+add_action('init', 'lk_upgrade_theme', 20);
 function lk_upgrade_theme() {
     if ( '2.4.0' === get_option( 'lk_setup_version' ) ) {
         return;
